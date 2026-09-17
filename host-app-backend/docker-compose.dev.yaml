@@ -1,0 +1,18 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: hostapp-postgres-dev
+
+    environment:
+      POSTGRES_DB: hostapp
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+
+    ports:
+      - "54500:5432"
+
+    volumes:
+      - postgres_data_hostapp_dev:/var/lib/postgresql/data
+
+volumes:
+  postgres_data_hostapp_dev:

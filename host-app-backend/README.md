@@ -7,6 +7,7 @@ Maven
 ### Запуск 
 
 ```
+docker compose -f docker-compose.dev.yaml up -d
 mvn spring-boot:run
 ```
 
