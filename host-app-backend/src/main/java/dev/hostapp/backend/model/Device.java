@@ -32,16 +32,16 @@ public class Device {
     @Column (name = "user_agent")
     private String userAgent;
 
-    @Column (nullable = false)
+    @Column (name = "token_hash", nullable = false)
     private String tokenHash;
 
-    @Column(nullable = false)
+    @Column(name = "session_valid_until", nullable = false)
     private Instant sessionValidUntil;
 
-    @Column(nullable = false, updatable = false)
+    @Column(name = "session_created_at", nullable = false, updatable = false)
     private Instant sessionCreatedAt;
 
-    @Column(nullable = false)
+    @Column(name = "session_last_used_at", nullable = false)
     private Instant sessionLastUsedAt;
 
     protected Device(){};
