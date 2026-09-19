@@ -11,7 +11,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 public interface DeviceRepository extends JpaRepository<Device, UUID> {
     List<Device> findAllByUser(User user);
 
-    Optional<Device> findByToken(String token);
+    Optional<Device> findByTokenHash(String token);
 
     int countByUser(User user);
 

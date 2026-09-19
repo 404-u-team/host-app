@@ -18,6 +18,8 @@ import java.util.Optional;
 import org.springframework.security.crypto.argon2.Argon2PasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
+
+// TODO: разнести UserService на AuthService (управление регистрацией, входом и авторизацией) и UserService (чистое управление юзерами)
 @Service
 public class UserService {
     private final UserRepository repository;
