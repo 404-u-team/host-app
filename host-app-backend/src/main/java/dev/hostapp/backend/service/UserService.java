@@ -1,11 +1,5 @@
 package dev.hostapp.backend.service;
 
-import dev.hostapp.backend.model.Device;
-import dev.hostapp.backend.model.User;
-import dev.hostapp.backend.repository.DeviceRepository;
-import dev.hostapp.backend.repository.UserRepository;
-import org.springframework.stereotype.Service;
-
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -17,18 +11,24 @@ import java.util.Optional;
 
 import org.springframework.security.crypto.argon2.Argon2PasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Service;
+
+import dev.hostapp.backend.model.Session;
+import dev.hostapp.backend.model.User;
+import dev.hostapp.backend.repository.SessionRepository;
+import dev.hostapp.backend.repository.UserRepository;
 
 
 // TODO: разнести UserService на AuthService (управление регистрацией, входом и авторизацией) и UserService (чистое управление юзерами)
 @Service
 public class UserService {
     private final UserRepository repository;
-    private final DeviceRepository deviceRepository;
+    private final SessionRepository sessionRepository;
     private static final SecureRandom SECURE_RANDOM = new SecureRandom();
 
-    public UserService(UserRepository userRepository, DeviceRepository deviceRepository) {
+    public UserService(UserRepository userRepository, SessionRepository sessionRepository) {
             this.repository = userRepository;
-            this.deviceRepository = deviceRepository;
+            this.sessionRepository = sessionRepository;
         }
 
     public User getByEmail(String email) {
@@ -90,13 +90,13 @@ public class UserService {
     public String loginUser(String email, String password, String ip, String userAgent) {
         if (!this.checkLogin(email, password)) {
             throw new IllegalArgumentException("Incorrect email or password");
-        };
+        }
         User user = this.getByEmail(email);
 
         String token = generateNewToken();
 
-        Device device = new Device(user, ip, userAgent, hashToken(token));
-        deviceRepository.save(device);
+        Session session = new Session(user, ip, userAgent, hashToken(token));
+        sessionRepository.save(session);
 
         return token;
     }
