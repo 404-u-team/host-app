@@ -16,8 +16,8 @@ import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
 
 @Entity
-@Table(name = "devices")
-public class Device {
+@Table(name = "sessions")
+public class Session {
     @Id
     @GeneratedValue (strategy = GenerationType.UUID)
     private UUID id;
@@ -44,9 +44,9 @@ public class Device {
     @Column(name = "session_last_used_at", nullable = false)
     private Instant sessionLastUsedAt;
 
-    protected Device(){};
+    protected Session(){};
 
-    public Device(User user, String ip, String userAgent, String token) {
+    public Session(User user, String ip, String userAgent, String token) {
         this.user = user;
         this.ip = ip;
         this.userAgent = userAgent;

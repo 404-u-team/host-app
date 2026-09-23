@@ -17,7 +17,7 @@ mvn spring-boot:run
 
 
 
-## Сущности (надо актуализировать)
+## Сущности (надо актуализировать) (в бд должны быть snake_case)
 
 
 ### User
@@ -30,7 +30,7 @@ mvn spring-boot:run
 - updatedAt
 
 
-### Device
+### Session
 - user
 - ip
 - userAgent
