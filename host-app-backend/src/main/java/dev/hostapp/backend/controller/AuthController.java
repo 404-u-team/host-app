@@ -5,6 +5,7 @@ import dev.hostapp.backend.dto.auth.LoginResponse;
 import dev.hostapp.backend.dto.auth.RegisterRequest;
 import dev.hostapp.backend.dto.auth.RegisterResponse;
 import dev.hostapp.backend.model.User;
+import dev.hostapp.backend.service.AuthService;
 import dev.hostapp.backend.service.UserService;
 import jakarta.servlet.http.HttpServletRequest;
 
@@ -23,9 +24,11 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/auth")
 public class AuthController {
 
+    private final AuthService authService;
     private final UserService userService;
 
-    public AuthController(UserService userService) {
+    public AuthController(AuthService authService, UserService userService) {
+        this.authService = authService;
         this.userService = userService;
     }
 
@@ -33,7 +36,7 @@ public class AuthController {
     public ResponseEntity<RegisterResponse> register(
         @RequestBody RegisterRequest req
     ) {
-        User user = userService.registerUser(
+        User user = authService.registerUser(
             req.name(),
             req.surname(),
             req.email(),
@@ -60,7 +63,7 @@ public class AuthController {
             String ip = request.getRemoteAddr();
             String userAgent = request.getHeader("User-Agent");
 
-            String token = userService.loginUser(
+            String token = authService.loginUser(
                 req.email(),
                 req.password(),
                 ip,

@@ -1,15 +1,17 @@
-package dev.hostapp.backend.middleware;
+package dev.hostapp.backend;
+
+import dev.hostapp.backend.middleware.AuthInterceptor;
 
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
-@Configuration
-public class WebConfig implements WebMvcConfigurer {
 
+@Configuration
+public class AppConfig implements WebMvcConfigurer {
     private final AuthInterceptor authInterceptor;
 
-    public WebConfig(AuthInterceptor authInterceptor) {
+    public AppConfig(AuthInterceptor authInterceptor) {
         this.authInterceptor = authInterceptor;
     }
 
@@ -19,9 +21,14 @@ public class WebConfig implements WebMvcConfigurer {
             .addInterceptor(authInterceptor)
             .addPathPatterns("/**")
             .excludePathPatterns(
-                "/auth/login",
                 "/auth/register",
-                "/health"
+                "/auth/login",
+                "/health",
+                "/swagger-ui.html",
+                "/swagger-ui/**",
+                "/v3/api-docs",
+                "/v3/api-docs/**",
+                "/v3/api-docs.yaml"
             );
     }
 }

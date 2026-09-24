@@ -15,6 +15,8 @@ mvn spring-boot:run
 
 1. ERD и соответствие третьей нормальной формуле
 
+## SWAGGER
+http://localhost:8080/swagger-ui.html
 
 
 ## Сущности (надо актуализировать)
