@@ -74,5 +74,9 @@ public class Device {
         sessionValidUntil = Instant.now().plus(7, ChronoUnit.DAYS);
     }
 
+    public User getUser() {
+        return user;
+    }
+
 
 }

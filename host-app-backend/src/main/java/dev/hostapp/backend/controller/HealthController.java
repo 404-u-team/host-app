@@ -10,4 +10,10 @@ public class HealthController {
     public String health() {
         return "OK";
     }
+
+    @GetMapping("/protected-health")
+    public String healthProtected() {
+        return "OK";
+    }
+
 }
