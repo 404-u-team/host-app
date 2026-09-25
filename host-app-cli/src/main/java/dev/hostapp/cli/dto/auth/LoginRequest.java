@@ -1,4 +1,4 @@
-package dev.hostapp.cli.model;
+package dev.hostapp.cli.dto.auth;
 
 public record LoginRequest(
         String email,
