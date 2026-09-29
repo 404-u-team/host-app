@@ -11,6 +11,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import dev.hostapp.backend.model.Server;
 import dev.hostapp.backend.model.ServerRequest;
 import dev.hostapp.backend.model.User;
 
@@ -178,4 +179,9 @@ public interface ServerRequestRepository extends JpaRepository<ServerRequest, UU
     boolean existsByOwnerEmailAndId(String email, UUID id);
 
     Optional<ServerRequest> findByOwnerEmailAndId(String email, UUID id);
+
+    // === Поиск по серверу ===
+    List<ServerRequest> findAllByServer(Server server);
+
+    List<ServerRequest> findAllByServerAndStatus(Server server, ServerRequest.RequestStatus status);
 }

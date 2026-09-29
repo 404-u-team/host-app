@@ -16,6 +16,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
+import jakarta.persistence.Version;
 
 @Entity
 @Table(name = "servers")
@@ -44,6 +45,30 @@ public class Server {
     @Column(nullable = false)
     private ServerStatus status = ServerStatus.OFF;
 
+    // === Ресурсы сервера (физические) ===
+    @Column(name = "cpu_cores", nullable = false)
+    private Integer cpuCores;
+
+    @Column(name = "ram_gb", nullable = false)
+    private Integer ramGb;
+
+    @Column(name = "disk_gb", nullable = false)
+    private Integer diskGb;
+
+    // === Доступные (свободные) ресурсы для бронирования ===
+    @Column(name = "available_cpu_cores", nullable = false)
+    private Integer availableCpuCores;
+
+    @Column(name = "available_ram_gb", nullable = false)
+    private Integer availableRamGb;
+
+    @Column(name = "available_disk_gb", nullable = false)
+    private Integer availableDiskGb;
+
+    @Version
+    @Column(name = "version", nullable = false)
+    private Long version = 0L;
+
     @Column(name = "created_at", nullable = false, updatable = false)
     private Instant createdAt;
 
@@ -53,8 +78,15 @@ public class Server {
     protected Server() {
     }
 
-    public Server(String hostname) {
+    public Server(String hostname, Integer cpuCores, Integer ramGb, Integer diskGb) {
         this.hostname = hostname;
+        this.cpuCores = cpuCores;
+        this.ramGb = ramGb;
+        this.diskGb = diskGb;
+        // Изначально все ресурсы свободны
+        this.availableCpuCores = cpuCores;
+        this.availableRamGb = ramGb;
+        this.availableDiskGb = diskGb;
     }
 
     @PrePersist
@@ -66,6 +98,32 @@ public class Server {
     @PreUpdate
     private void onUpdate() {
         updatedAt = Instant.now();
+    }
+
+    // === Логика бронирования ресурсов ===
+    public boolean canAllocate(Integer cpuCores, Integer ramGb, Integer diskGb) {
+        return availableCpuCores >= cpuCores
+                && availableRamGb >= ramGb
+                && availableDiskGb >= diskGb;
+    }
+
+    public void allocate(Integer cpuCores, Integer ramGb, Integer diskGb) {
+        if (!canAllocate(cpuCores, ramGb, diskGb)) {
+            throw new IllegalStateException("Недостаточно ресурсов на сервере " + hostname);
+        }
+        this.availableCpuCores -= cpuCores;
+        this.availableRamGb -= ramGb;
+        this.availableDiskGb -= diskGb;
+    }
+
+    public void release(Integer cpuCores, Integer ramGb, Integer diskGb) {
+        this.availableCpuCores += cpuCores;
+        this.availableRamGb += ramGb;
+        this.availableDiskGb += diskGb;
+        // Не превышаем total
+        this.availableCpuCores = Math.min(this.availableCpuCores, this.cpuCores);
+        this.availableRamGb = Math.min(this.availableRamGb, this.ramGb);
+        this.availableDiskGb = Math.min(this.availableDiskGb, this.diskGb);
     }
 
     public UUID getId() {
@@ -81,9 +139,8 @@ public class Server {
     }
 
     public void addRequestToHistory(UUID requestId) {
-        if (requestId != null) {
+        if (requestId != null)
             this.requestIdsHistory.add(requestId);
-        }
     }
 
     public String getHostname() {
@@ -103,9 +160,8 @@ public class Server {
     }
 
     public void addIpv4Address(String ip) {
-        if (ip != null) {
+        if (ip != null)
             this.ipv4Addresses.add(ip);
-        }
     }
 
     public List<String> getIpv6Addresses() {
@@ -117,9 +173,8 @@ public class Server {
     }
 
     public void addIpv6Address(String ip) {
-        if (ip != null) {
+        if (ip != null)
             this.ipv6Addresses.add(ip);
-        }
     }
 
     public ServerStatus getStatus() {
@@ -128,6 +183,42 @@ public class Server {
 
     public void setStatus(ServerStatus status) {
         this.status = status;
+    }
+
+    public Integer getCpuCores() {
+        return cpuCores;
+    }
+
+    public void setCpuCores(Integer cpuCores) {
+        this.cpuCores = cpuCores;
+    }
+
+    public Integer getRamGb() {
+        return ramGb;
+    }
+
+    public void setRamGb(Integer ramGb) {
+        this.ramGb = ramGb;
+    }
+
+    public Integer getDiskGb() {
+        return diskGb;
+    }
+
+    public void setDiskGb(Integer diskGb) {
+        this.diskGb = diskGb;
+    }
+
+    public Integer getAvailableCpuCores() {
+        return availableCpuCores;
+    }
+
+    public Integer getAvailableRamGb() {
+        return availableRamGb;
+    }
+
+    public Integer getAvailableDiskGb() {
+        return availableDiskGb;
     }
 
     public Instant getCreatedAt() {
@@ -139,8 +230,6 @@ public class Server {
     }
 
     public enum ServerStatus {
-        OFF,
-        ON,
-        SUSPENDED
+        OFF, ON, SUSPENDED
     }
 }
