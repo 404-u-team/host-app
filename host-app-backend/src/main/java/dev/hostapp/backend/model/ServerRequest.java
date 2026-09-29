@@ -28,6 +28,10 @@ public class ServerRequest {
     @JoinColumn(name = "owner_id", nullable = false)
     private User owner;
 
+    @ManyToOne
+    @JoinColumn(name = "server_id")
+    private Server server;
+
     @Column(name = "cpu_cores", nullable = false)
     private Integer cpuCores;
 
@@ -83,6 +87,14 @@ public class ServerRequest {
 
     public void setOwner(User owner) {
         this.owner = owner;
+    }
+
+    public Server getServer() {
+        return server;
+    }
+
+    public void setServer(Server server) {
+        this.server = server;
     }
 
     public Integer getCpuCores() {
