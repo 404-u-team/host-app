@@ -1,15 +1,53 @@
 package dev.hostapp.backend.exception;
 
-import dev.hostapp.backend.dto.ErrorResponse;
-
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+
+import dev.hostapp.backend.dto.ErrorResponse;
 
 
 @RestControllerAdvice
 public class ApiExceptionHandler {
+
+    @ExceptionHandler(ApiException.class)
+    public ResponseEntity<ErrorResponse> handleNoChangesProvided(
+        ApiException exception
+    ) {
+        ErrorResponse response = new ErrorResponse(
+            exception.getStatus().value(),
+            exception.getMessage()
+        );
+
+        return ResponseEntity
+            .status(HttpStatus.BAD_REQUEST)
+            .body(response);
+    }
+
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity<ErrorResponse> handleValidationError(
+        MethodArgumentNotValidException exception
+    ) {
+        String message = exception.getBindingResult()
+            .getFieldErrors()
+            .stream()
+            .map(error -> error.getField() + ": " + error.getDefaultMessage())
+            .distinct()
+            .reduce((first, second) -> first + "; " + second)
+            .orElse("Validation failed");
+
+        ErrorResponse response = new ErrorResponse(
+            HttpStatus.BAD_REQUEST.value(),
+            message
+        );
+
+        return ResponseEntity
+            .status(HttpStatus.BAD_REQUEST)
+            .body(response);
+    }
+
 
     @ExceptionHandler(IllegalArgumentException.class)
     public ResponseEntity<ErrorResponse> handleBadRequest(

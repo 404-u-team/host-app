@@ -17,6 +17,8 @@ import dev.hostapp.backend.model.User;
 public interface ServerRequestRepository extends JpaRepository<ServerRequest, UUID> {
 
     // === Базовые поиски (по User объекту) ===
+    Optional<ServerRequest> findById(UUID id);
+
     List<ServerRequest> findAllByOwner(User owner);
 
     List<ServerRequest> findAllByStatus(ServerRequest.RequestStatus status);

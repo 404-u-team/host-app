@@ -1,14 +1,5 @@
 package dev.hostapp.backend.controller;
 
-import dev.hostapp.backend.dto.auth.LoginRequest;
-import dev.hostapp.backend.dto.auth.LoginResponse;
-import dev.hostapp.backend.dto.auth.RegisterRequest;
-import dev.hostapp.backend.dto.auth.RegisterResponse;
-import dev.hostapp.backend.model.User;
-import dev.hostapp.backend.service.AuthService;
-import dev.hostapp.backend.service.UserService;
-import jakarta.servlet.http.HttpServletRequest;
-
 import java.time.Duration;
 
 import org.springframework.http.HttpHeaders;
@@ -19,6 +10,15 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+
+import dev.hostapp.backend.dto.auth.LoginRequest;
+import dev.hostapp.backend.dto.auth.LoginResponse;
+import dev.hostapp.backend.dto.auth.RegisterRequest;
+import dev.hostapp.backend.dto.auth.RegisterResponse;
+import dev.hostapp.backend.model.User;
+import dev.hostapp.backend.service.AuthService;
+import dev.hostapp.backend.service.UserService;
+import jakarta.servlet.http.HttpServletRequest;
 
 @RestController
 @RequestMapping("/auth")

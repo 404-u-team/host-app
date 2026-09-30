@@ -1,12 +1,5 @@
 package dev.hostapp.backend.service;
 
-import dev.hostapp.backend.exception.UnauthorizedException;
-import dev.hostapp.backend.exception.UserNotFoundException;
-import dev.hostapp.backend.model.Device;
-import dev.hostapp.backend.model.User;
-import dev.hostapp.backend.repository.DeviceRepository;
-import org.springframework.stereotype.Service;
-
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -18,6 +11,13 @@ import java.util.Optional;
 
 import org.springframework.security.crypto.argon2.Argon2PasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Service;
+
+import dev.hostapp.backend.exception.UnauthorizedException;
+import dev.hostapp.backend.exception.UserNotFoundException;
+import dev.hostapp.backend.model.Device;
+import dev.hostapp.backend.model.User;
+import dev.hostapp.backend.repository.DeviceRepository;
 
 
 @Service
@@ -40,6 +40,7 @@ public class AuthService {
         return userService.createUser(
             name,
             surname,
+            User.UserRole.USER, // by default user is created with this role
             email,
             encoder.encode(password)
         );

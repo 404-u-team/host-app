@@ -32,6 +32,9 @@ public class User {
     @Column(name = "password_hash", nullable = false)
     private String passwordHash;
 
+    @Column(name = "role", nullable = false)
+    private UserRole role;
+
     @Column(name = "created_at", nullable = false, updatable = false)
     private Instant createdAt;
 
@@ -41,9 +44,10 @@ public class User {
     protected User() {
     }
 
-    public User(String name, String surname, String email, String passwordHash) {
+    public User(String name, String surname, UserRole role, String email, String passwordHash) {
         this.name = name;
         this.surname = surname;
+        this.role = role;
         this.email = email;
         this.passwordHash = passwordHash;
     }
@@ -79,11 +83,20 @@ public class User {
         return passwordHash;
     }
 
+    public UserRole getRole() {
+        return role;
+    }
+
     public Instant getCreatedAt() {
         return createdAt;
     }
 
     public Instant getUpdatedAt() {
         return updatedAt;
+    }
+
+    public enum UserRole {
+        USER,
+        ADMIN
     }
 }

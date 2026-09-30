@@ -25,8 +25,8 @@ public class UserService {
         return user.get();
     }
 
-    public User createUser(String name, String surname, String email, String passwordHash) {
-        User user = new User(name, surname, email, passwordHash);
+    public User createUser(String name, String surname, User.UserRole role, String email, String passwordHash) {
+        User user = new User(name, surname, role, email, passwordHash);
 
         return repository.save(user);
     }

@@ -37,8 +37,9 @@ public class ServerRequest {
     @Column(name = "disk_gb", nullable = false)
     private Integer diskGb;
 
+    @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private String os;
+    private OSType os;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
@@ -53,7 +54,7 @@ public class ServerRequest {
     protected ServerRequest() {
     }
 
-    public ServerRequest(User owner, Integer cpuCores, Integer ramGb, Integer diskGb, String os) {
+    public ServerRequest(User owner, Integer cpuCores, Integer ramGb, Integer diskGb, OSType os) {
         this.owner = owner;
         this.cpuCores = cpuCores;
         this.ramGb = ramGb;
@@ -109,11 +110,11 @@ public class ServerRequest {
         this.diskGb = diskGb;
     }
 
-    public String getOs() {
+    public OSType getOs() {
         return os;
     }
 
-    public void setOs(String os) {
+    public void setOs(OSType os) {
         this.os = os;
     }
 
@@ -139,5 +140,13 @@ public class ServerRequest {
         REJECTED,
         COMPLETED,
         CANCELLED
+    }
+
+    public enum OSType {
+        WINDOWS10,
+        WINDOWS11,
+        ARCH,
+        DEBIAN,
+        CUSTOM
     }
 }
