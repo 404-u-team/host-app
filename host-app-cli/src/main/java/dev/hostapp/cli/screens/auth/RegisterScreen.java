@@ -21,12 +21,12 @@ public class RegisterScreen extends BaseScreen {
     @Override
     public void show() {
         System.out.println();
-        System.out.println("=== Registration ===");
+        System.out.println("=== Регистрация ===");
 
-        String name = readLine("Name: ");
-        String surname = readLine("Surname: ");
+        String name = readLine("Имя: ");
+        String surname = readLine("Фамилия: ");
         String email = readLine("Email: ");
-        String password = readLine("Password: ");
+        String password = readLine("Пароль: ");
 
         try {
             RegisterResponse response = authApi.register(
@@ -37,7 +37,7 @@ public class RegisterScreen extends BaseScreen {
             );
 
             System.out.println();
-            System.out.println("Registration successful!");
+            System.out.println("Регистрация выполнена");
 
             System.out.println(
                 "User: "

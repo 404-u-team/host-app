@@ -2,7 +2,9 @@ package dev.hostapp.cli;
 
 import dev.hostapp.cli.api.ApiClient;
 import dev.hostapp.cli.api.AuthApi;
+import dev.hostapp.cli.api.ServerRequestApi;
 import dev.hostapp.cli.screens.BaseScreen;
+import dev.hostapp.cli.screens.MainMenuScreen;
 import dev.hostapp.cli.screens.auth.LoginScreen;
 import dev.hostapp.cli.screens.auth.RegisterScreen;
 
@@ -18,41 +20,47 @@ public class App {
         );
 
         AuthApi authApi = new AuthApi(apiClient);
+        ServerRequestApi requestApi = new ServerRequestApi(apiClient);
 
         BaseScreen registerScreen = new RegisterScreen(
             scanner,
             authApi
         );
 
-        BaseScreen loginScreen = new LoginScreen(
+        LoginScreen loginScreen = new LoginScreen(
             scanner,
             authApi
         );
 
         while (true) {
             System.out.println();
-            System.out.println("=== Host App ===");
-            System.out.println("1. Register");
-            System.out.println("2. Login");
-            System.out.println("0. Exit");
-            System.out.print("> ");
+            System.out.println("=== HOST APP ===");
+            System.out.println("1. Регистрация");
+            System.out.println("2. Вход");
+            System.out.println("0. Выход");
+            System.out.print("Выберите пункт: ");
 
             String choice = scanner.nextLine();
 
             switch (choice) {
                 case "1" -> registerScreen.show();
 
-                case "2" -> loginScreen.show();
+                case "2" -> {
+                    if (loginScreen.login()) {
+                        new MainMenuScreen(scanner, requestApi).show();
+                        System.out.println("До свидания!");
+                        scanner.close();
+                        return;
+                    }
+                }
 
                 case "0" -> {
-                    System.out.println("Bye!");
+                    System.out.println("До свидания!");
                     scanner.close();
                     return;
                 }
 
-                default -> System.out.println(
-                    "Unknown command"
-                );
+                default -> System.out.println("Ошибка: неизвестный пункт меню");
             }
         }
     }
