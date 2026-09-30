@@ -57,7 +57,7 @@ public class ServerRequestService {
         User owner
     ) {
         if (owner.getRole().equals(User.UserRole.ADMIN)) {
-            return adminPatchServerRequest(id, cpuCores, ramGb, diskGb, os, status, owner);
+            return adminPatchServerRequest(id, status, owner);
         }
 
         // otherwise it is user
@@ -101,15 +101,11 @@ public class ServerRequestService {
 
     private ServerRequestResponse adminPatchServerRequest(
         UUID id,
-        Integer cpuCores,
-        Integer ramGb,
-        Integer diskGb,
-        ServerRequest.OSType os,
         ServerRequest.RequestStatus status,
         User owner
     ) {
-        // checking that there is any changes
-        validatePatchNotEmpty(cpuCores, ramGb, diskGb, os, status);
+        // checking that there is any changes (вот тут костыль скорее, но нормально)
+        validatePatchNotEmpty(null, null, null, null, status);
 
         // admin can change status to be any but CREATED and CANCELLED
         if (status != null 
@@ -128,12 +124,7 @@ public class ServerRequestService {
         }
 
         return updateAndSaveServerRequest(
-            serverRequest,
-            cpuCores,
-            ramGb,
-            diskGb,
-            os,
-            status
+            serverRequest, null, null, null, null, status
         );
     }
 
