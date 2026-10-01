@@ -1,6 +1,7 @@
 package dev.hostapp.backend.middleware;
 
 import dev.hostapp.backend.model.User;
+import dev.hostapp.backend.exception.UnauthorizedException;
 import dev.hostapp.backend.service.AuthService;
 
 import jakarta.servlet.http.Cookie;
@@ -28,15 +29,13 @@ public class AuthInterceptor implements HandlerInterceptor {
         String token = getToken(request);
 
         if (token == null) {
-            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-            return false;
+            throw new UnauthorizedException("Сначала войдите в систему");
         }
 
         User user = authService.getUserByToken(token);
 
         if (user == null) {
-            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-            return false;
+            throw new UnauthorizedException("Сессия недействительна, войдите снова");
         }
 
         request.setAttribute("user", user);

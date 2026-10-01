@@ -1,6 +1,7 @@
 package dev.hostapp.backend.service;
 
 import dev.hostapp.backend.exception.UnauthorizedException;
+import dev.hostapp.backend.exception.UserAlreadyExistsException;
 import dev.hostapp.backend.exception.UserNotFoundException;
 import dev.hostapp.backend.model.Device;
 import dev.hostapp.backend.model.User;
@@ -32,8 +33,12 @@ public class AuthService {
     }
 
     public User registerUser(String name, String surname, String email, String password) {
-        if (name.isBlank() || surname.isBlank() || email.isBlank() || password.isBlank()) {
+        if (name == null || name.isBlank() || surname == null || surname.isBlank()
+                || email == null || email.isBlank() || password == null || password.isBlank()) {
             throw new IllegalArgumentException("Bad request");
+        }
+        if (userService.emailExists(email)) {
+            throw new UserAlreadyExistsException("User already exists");
         }
         PasswordEncoder encoder = Argon2PasswordEncoder.defaultsForSpringSecurity_v5_8();
 
@@ -46,7 +51,7 @@ public class AuthService {
     }
 
     private boolean checkLogin(String email, String password) {
-        if (email.isBlank() || password.isBlank()) {
+        if (email == null || email.isBlank() || password == null || password.isBlank()) {
             throw new IllegalArgumentException("Bad request");
         }
         PasswordEncoder encoder = Argon2PasswordEncoder.defaultsForSpringSecurity_v5_8();

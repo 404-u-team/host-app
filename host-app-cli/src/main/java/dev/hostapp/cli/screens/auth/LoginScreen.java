@@ -20,11 +20,15 @@ public class LoginScreen extends BaseScreen {
 
     @Override
     public void show() {
+        login();
+    }
+
+    public boolean login() {
         System.out.println();
-        System.out.println("=== Login ===");
+        System.out.println("=== Вход ===");
 
         String email = readLine("Email: ");
-        String password = readLine("Password: ");
+        String password = readLine("Пароль: ");
 
         try {
             LoginResponse response = authApi.login(
@@ -33,13 +37,12 @@ public class LoginScreen extends BaseScreen {
             );
 
             System.out.println();
-            System.out.println("Login successful!");
-            System.out.println(
-                "Welcome, " + response.name() + "!"
-            );
+            System.out.println("Вход выполнен. Добро пожаловать, " + response.name() + "!");
+            return true;
 
         } catch (Exception e) {
             printError(e.getMessage());
+            return false;
         }
     }
 }

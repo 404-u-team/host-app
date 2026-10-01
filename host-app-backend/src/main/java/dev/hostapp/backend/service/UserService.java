@@ -25,6 +25,10 @@ public class UserService {
         return user.get();
     }
 
+    public boolean emailExists(String email) {
+        return repository.findByEmail(email).isPresent();
+    }
+
     public User createUser(String name, String surname, String email, String passwordHash) {
         User user = new User(name, surname, email, passwordHash);
 

@@ -75,10 +75,9 @@ public class AuthController {
             ResponseCookie cookie = ResponseCookie
                 .from("session", token)
                 .httpOnly(true)
-                //.secure(true) // TODO: re-enable
                 .sameSite("Lax")
                 .path("/")
-                .maxAge(Duration.ofDays(14))
+                .maxAge(Duration.ofDays(7))
                 .build();
 
             LoginResponse response = new LoginResponse(
