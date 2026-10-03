@@ -5,7 +5,6 @@ import dev.hostapp.backend.dto.serverrequest.ServerRequestResponse;
 import dev.hostapp.backend.dto.serverrequest.StatisticsResponse;
 import dev.hostapp.backend.dto.serverrequest.UpdateServerRequest;
 import dev.hostapp.backend.exceptions.ForbiddenException;
-import dev.hostapp.backend.exceptions.InsufficientResourcesException;
 import dev.hostapp.backend.exceptions.ResourceNotFoundException;
 import dev.hostapp.backend.model.Server;
 import dev.hostapp.backend.model.ServerRequest;
@@ -47,20 +46,7 @@ public class ServerRequestService {
 
         ServerRequest request = new ServerRequest(owner, dto.cpuCores(), dto.ramGb(), dto.diskGb(), dto.os().trim());
         request = requestRepository.save(request);
-
-        Optional<Server> server = findBestFitServer(dto.cpuCores(), dto.ramGb(), dto.diskGb());
-        if (server.isPresent()) {
-            Server selectedServer = server.get();
-            selectedServer.allocate(dto.cpuCores(), dto.ramGb(), dto.diskGb());
-            selectedServer.addRequestToHistory(request.getId());
-            serverRepository.save(selectedServer);
-            request.setServer(selectedServer);
-            request.setStatus(ServerRequest.RequestStatus.APPROVED);
-            request = requestRepository.save(request);
-        }
-
-        UUID serverId = request.getServer() != null ? request.getServer().getId() : null;
-        return ServerRequestResponse.from(request, serverId);
+        return ServerRequestResponse.from(request, null);
     }
 
     public ServerRequestResponse get(UUID requestId, User currentUser, boolean isAdmin) {
@@ -214,13 +200,15 @@ public class ServerRequestService {
             throw new IllegalStateException("Недопустимый переход статуса: " + request.getStatus() + " -> " + newStatus);
         }
 
-        if (newStatus == ServerRequest.RequestStatus.APPROVED && request.getServer() == null) {
-            Server server = findBestFitServer(request.getCpuCores(), request.getRamGb(), request.getDiskGb())
-                    .orElseThrow(() -> new InsufficientResourcesException("Нет включённого сервера с достаточными ресурсами"));
-            server.allocate(request.getCpuCores(), request.getRamGb(), request.getDiskGb());
+        if (newStatus == ServerRequest.RequestStatus.COMPLETED && request.getServer() == null) {
+            Server server = new Server(
+                    "server-" + request.getId(),
+                    request.getCpuCores(),
+                    request.getRamGb(),
+                    request.getDiskGb()
+            );
             server.addRequestToHistory(request.getId());
-            serverRepository.save(server);
-            request.setServer(server);
+            request.setServer(serverRepository.save(server));
         }
 
         if (newStatus == ServerRequest.RequestStatus.CANCELLED && request.getServer() != null) {
@@ -261,12 +249,6 @@ public class ServerRequestService {
         if (os == null || os.isBlank()) {
             throw new IllegalArgumentException("OS не должна быть пустой");
         }
-    }
-
-    private Optional<Server> findBestFitServer(int cpu, int ram, int disk) {
-        return serverRepository.findAllByStatus(Server.ServerStatus.ON).stream()
-                .filter(server -> server.canAllocate(cpu, ram, disk))
-                .min(Comparator.comparingInt(Server::getAvailableCpuCores));
     }
 
     private boolean canChangeStatus(ServerRequest.RequestStatus oldStatus, ServerRequest.RequestStatus newStatus) {

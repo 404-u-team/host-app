@@ -23,6 +23,9 @@ public interface ServerRequestRepository extends JpaRepository<ServerRequest, UU
     @Query("SELECT DISTINCT r.server FROM ServerRequest r WHERE r.owner = :owner AND r.server IS NOT NULL")
     List<Server> findAssignedServersByOwner(@Param("owner") User owner);
 
+    @Query("SELECT DISTINCT r.server FROM ServerRequest r WHERE r.status = :status AND r.server IS NOT NULL")
+    List<Server> findServersByRequestStatus(@Param("status") ServerRequest.RequestStatus status);
+
     boolean existsByOwner_IdAndServer_Id(UUID ownerId, UUID serverId);
 
     boolean existsByServer_Id(UUID serverId);

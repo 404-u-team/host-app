@@ -22,10 +22,6 @@ public class ServerApi extends BaseApi {
         return client.get("/servers/" + id, ServerResponse.class);
     }
 
-    public ServerResponse create(ServerData server) throws IOException, InterruptedException {
-        return client.post("/servers", server, ServerResponse.class);
-    }
-
     public ServerResponse update(UUID id, ServerData server) throws IOException, InterruptedException {
         return client.put("/servers/" + id, server, ServerResponse.class);
     }

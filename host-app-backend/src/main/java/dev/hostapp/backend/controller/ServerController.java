@@ -1,6 +1,5 @@
 package dev.hostapp.backend.controller;
 
-import dev.hostapp.backend.dto.server.CreateServerRequest;
 import dev.hostapp.backend.dto.server.ServerResponse;
 import dev.hostapp.backend.dto.server.UpdateServerRequest;
 import dev.hostapp.backend.dto.server.UpdateServerStatusRequest;
@@ -8,13 +7,11 @@ import dev.hostapp.backend.exceptions.ForbiddenException;
 import dev.hostapp.backend.model.User;
 import dev.hostapp.backend.service.ServerService;
 import jakarta.validation.Valid;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestAttribute;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -45,15 +42,6 @@ public class ServerController {
             @PathVariable UUID uuid
     ) {
         return ResponseEntity.ok(serverService.get(uuid, currentUser, isAdmin(currentUser)));
-    }
-
-    @PostMapping
-    public ResponseEntity<ServerResponse> create(
-            @RequestAttribute("user") User currentUser,
-            @Valid @RequestBody CreateServerRequest dto
-    ) {
-        requireAdmin(currentUser);
-        return ResponseEntity.status(HttpStatus.CREATED).body(serverService.create(dto));
     }
 
     @PutMapping("/{uuid}")

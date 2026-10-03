@@ -1,11 +1,11 @@
 package dev.hostapp.backend.service;
 
-import dev.hostapp.backend.dto.server.CreateServerRequest;
 import dev.hostapp.backend.dto.server.ServerResponse;
 import dev.hostapp.backend.dto.server.UpdateServerRequest;
 import dev.hostapp.backend.exceptions.ForbiddenException;
 import dev.hostapp.backend.exceptions.ResourceNotFoundException;
 import dev.hostapp.backend.model.Server;
+import dev.hostapp.backend.model.ServerRequest;
 import dev.hostapp.backend.model.User;
 import dev.hostapp.backend.repository.ServerRepository;
 import dev.hostapp.backend.repository.ServerRequestRepository;
@@ -32,7 +32,7 @@ public class ServerService {
     @Transactional
     public List<ServerResponse> getAllAccessible(User user, boolean isAdmin) {
         List<Server> servers = isAdmin
-                ? serverRepository.findAll()
+                ? requestRepository.findServersByRequestStatus(ServerRequest.RequestStatus.COMPLETED)
                 : requestRepository.findAssignedServersByOwner(user);
 
         return servers.stream()
@@ -46,17 +46,6 @@ public class ServerService {
         Server server = findServer(serverId);
         checkAccess(server, user, isAdmin);
         return ServerResponse.from(server);
-    }
-
-    @Transactional
-    public ServerResponse create(CreateServerRequest dto) {
-        String hostname = normalizeHostname(dto.hostname());
-        ensureHostnameAvailable(hostname, null);
-
-        Server server = new Server(hostname, dto.cpuCores(), dto.ramGb(), dto.diskGb());
-        server.setIpv4Addresses(normalizeAddresses(dto.ipv4Addresses()));
-        server.setIpv6Addresses(normalizeAddresses(dto.ipv6Addresses()));
-        return ServerResponse.from(serverRepository.save(server));
     }
 
     @Transactional
