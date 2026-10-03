@@ -42,7 +42,7 @@ public class MainMenuScreen extends BaseScreen {
             System.out.println("8. Выход");
 
             switch (readLine("Выберите пункт: ")) {
-                case "1" -> new RequestsScreen(scanner, requestApi).show();
+                case "1" -> new RequestsScreen(scanner, requestApi, admin).show();
                 case "2" -> new ServersScreen(scanner, serverApi, admin).show();
                 case "3" -> new SearchScreen(scanner, requestApi).show();
                 case "4" -> new FilterScreen(scanner, requestApi).show();

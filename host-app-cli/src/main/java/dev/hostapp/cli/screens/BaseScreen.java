@@ -77,6 +77,7 @@ public abstract class BaseScreen {
 
     protected void printRequest(ServerRequestResponse request) {
         System.out.println("ID: " + request.id());
+        System.out.println("Владелец ID: " + request.ownerId());
         System.out.println("CPU: " + request.cpuCores() + " | RAM: " + request.ramGb()
                 + " GB | Disk: " + request.diskGb() + " GB");
         System.out.println("OS: " + request.os() + " | Статус: " + request.status());

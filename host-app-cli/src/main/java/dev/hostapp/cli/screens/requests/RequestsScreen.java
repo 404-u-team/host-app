@@ -9,10 +9,12 @@ import java.util.UUID;
 public class RequestsScreen extends BaseScreen {
 
     private final ServerRequestApi requestApi;
+    private final boolean admin;
 
-    public RequestsScreen(Scanner scanner, ServerRequestApi requestApi) {
+    public RequestsScreen(Scanner scanner, ServerRequestApi requestApi, boolean admin) {
         super(scanner);
         this.requestApi = requestApi;
+        this.admin = admin;
     }
 
     @Override
@@ -25,7 +27,12 @@ public class RequestsScreen extends BaseScreen {
             System.out.println("3. Создать");
             System.out.println("4. Изменить");
             System.out.println("5. Удалить");
-            System.out.println("6. Назад");
+            if (admin) {
+                System.out.println("6. Обработать заявку / изменить статус");
+                System.out.println("7. Назад");
+            } else {
+                System.out.println("6. Назад");
+            }
 
             switch (readLine("Выберите пункт: ")) {
                 case "1" -> showAll();
@@ -34,7 +41,12 @@ public class RequestsScreen extends BaseScreen {
                 case "4" -> update();
                 case "5" -> delete();
                 case "6" -> {
-                    return;
+                    if (admin) updateStatus();
+                    else return;
+                }
+                case "7" -> {
+                    if (admin) return;
+                    printError("неизвестный пункт меню");
                 }
                 default -> printError("неизвестный пункт меню");
             }
@@ -43,7 +55,7 @@ public class RequestsScreen extends BaseScreen {
 
     private void showAll() {
         try {
-            printRequests(requestApi.getAll());
+            printRequests(admin ? requestApi.getAllAdmin() : requestApi.getAll());
         } catch (Exception exception) {
             printError(exception.getMessage());
         }
@@ -89,6 +101,19 @@ public class RequestsScreen extends BaseScreen {
         try {
             requestApi.delete(id);
             System.out.println("Заявка удалена");
+        } catch (Exception exception) {
+            printError(exception.getMessage());
+        }
+    }
+
+    private void updateStatus() {
+        UUID id = readUuid("ID заявки: ");
+        String status = readChoice(
+                "Новый статус (APPROVED, REJECTED, COMPLETED, CANCELLED): ",
+                "APPROVED", "REJECTED", "COMPLETED", "CANCELLED"
+        );
+        try {
+            printRequest(requestApi.updateStatus(id, status));
         } catch (Exception exception) {
             printError(exception.getMessage());
         }

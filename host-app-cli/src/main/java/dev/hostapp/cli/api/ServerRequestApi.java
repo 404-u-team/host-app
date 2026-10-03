@@ -24,6 +24,10 @@ public class ServerRequestApi extends BaseApi {
         return client.getList("/requests", ServerRequestResponse.class);
     }
 
+    public List<ServerRequestResponse> getAllAdmin() throws IOException, InterruptedException {
+        return client.getList("/requests/admin", ServerRequestResponse.class);
+    }
+
     public ServerRequestResponse get(UUID id) throws IOException, InterruptedException {
         return client.get("/requests/" + id, ServerRequestResponse.class);
     }
@@ -35,6 +39,10 @@ public class ServerRequestApi extends BaseApi {
 
     public void delete(UUID id) throws IOException, InterruptedException {
         client.delete("/requests/" + id);
+    }
+
+    public ServerRequestResponse updateStatus(UUID id, String status) throws IOException, InterruptedException {
+        return client.patch("/requests/" + id + "/status?status=" + encode(status), ServerRequestResponse.class);
     }
 
     public List<ServerRequestResponse> searchByOs(String os) throws IOException, InterruptedException {

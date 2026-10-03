@@ -55,7 +55,7 @@ public class ServerRequestController {
             @RequestAttribute("user") User currentUser,
             @PathVariable UUID uuid
     ) {
-        return ResponseEntity.ok(requestService.get(uuid, currentUser, false));
+        return ResponseEntity.ok(requestService.get(uuid, currentUser, isAdmin(currentUser)));
     }
 
     @PutMapping("/{uuid}")
@@ -64,7 +64,7 @@ public class ServerRequestController {
             @PathVariable UUID uuid,
             @Valid @RequestBody UpdateServerRequest dto
     ) {
-        return ResponseEntity.ok(requestService.update(uuid, currentUser, dto));
+        return ResponseEntity.ok(requestService.update(uuid, currentUser, dto, isAdmin(currentUser)));
     }
 
     @DeleteMapping("/{uuid}")
@@ -72,7 +72,7 @@ public class ServerRequestController {
             @RequestAttribute("user") User currentUser,
             @PathVariable UUID uuid
     ) {
-        requestService.delete(uuid, currentUser, false);
+        requestService.delete(uuid, currentUser, isAdmin(currentUser));
         return ResponseEntity.noContent().build();
     }
 
@@ -83,12 +83,22 @@ public class ServerRequestController {
         return ResponseEntity.ok(requestService.getAllByOwner(currentUser));
     }
 
+    @GetMapping("/admin")
+    public ResponseEntity<List<ServerRequestResponse>> getAllForAdmin(
+            @RequestAttribute("user") User currentUser
+    ) {
+        if (!isAdmin(currentUser)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
+        return ResponseEntity.ok(requestService.getAll());
+    }
+
     @GetMapping("/all")
     public ResponseEntity<Page<ServerRequestResponse>> getAll(
             @RequestAttribute("user") User currentUser,
             @PageableDefault(size = 20) Pageable pageable
     ) {
-        if (!"ADMIN".equalsIgnoreCase(currentUser.getEmail())) {
+        if (!isAdmin(currentUser)) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
         return ResponseEntity.ok(requestService.getAll(pageable));
@@ -100,10 +110,14 @@ public class ServerRequestController {
             @PathVariable UUID uuid,
             @RequestParam ServerRequest.RequestStatus status
     ) {
-        if (!"ADMIN".equalsIgnoreCase(currentUser.getEmail())) {
+        if (!isAdmin(currentUser)) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
         return ResponseEntity.ok(requestService.updateStatus(uuid, status));
+    }
+
+    private boolean isAdmin(User user) {
+        return user != null && "ADMIN".equalsIgnoreCase(user.getEmail());
     }
 
     @GetMapping("/search")

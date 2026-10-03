@@ -12,8 +12,6 @@ docker compose up --build
 API: http://localhost:8080  
 Swagger: http://localhost:8080/swagger-ui.html
 
-Чтобы остановить контейнеры, нажмите `Ctrl+C` или выполните `docker compose down`. Данные PostgreSQL сохраняются в Docker volume. Удалить базу вместе с volume можно командой `docker compose down -v`.
-
 Для локальной разработки с запуском Spring Boot через Maven используйте только PostgreSQL из каталога `host-app-backend`:
 
 ```sh

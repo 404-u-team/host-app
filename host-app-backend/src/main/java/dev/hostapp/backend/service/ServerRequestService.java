@@ -5,6 +5,7 @@ import dev.hostapp.backend.dto.serverrequest.ServerRequestResponse;
 import dev.hostapp.backend.dto.serverrequest.StatisticsResponse;
 import dev.hostapp.backend.dto.serverrequest.UpdateServerRequest;
 import dev.hostapp.backend.exceptions.ForbiddenException;
+import dev.hostapp.backend.exceptions.InsufficientResourcesException;
 import dev.hostapp.backend.exceptions.ResourceNotFoundException;
 import dev.hostapp.backend.model.Server;
 import dev.hostapp.backend.model.ServerRequest;
@@ -69,9 +70,9 @@ public class ServerRequestService {
     }
 
     @Transactional
-    public ServerRequestResponse update(UUID requestId, User currentUser, UpdateServerRequest dto) {
+    public ServerRequestResponse update(UUID requestId, User currentUser, UpdateServerRequest dto, boolean isAdmin) {
         ServerRequest request = findRequest(requestId);
-        checkAccess(request, currentUser, false);
+        checkAccess(request, currentUser, isAdmin);
         if (request.getStatus() != ServerRequest.RequestStatus.CREATED) {
             throw new IllegalStateException("Изменить можно только заявку со статусом CREATED");
         }
@@ -100,6 +101,12 @@ public class ServerRequestService {
 
     public List<ServerRequestResponse> getAllByOwner(User owner) {
         return requestRepository.findAllByOwner(owner).stream()
+                .map(this::toResponse)
+                .toList();
+    }
+
+    public List<ServerRequestResponse> getAll() {
+        return requestRepository.findAll().stream()
                 .map(this::toResponse)
                 .toList();
     }
@@ -205,6 +212,15 @@ public class ServerRequestService {
         ServerRequest request = findRequest(requestId);
         if (!canChangeStatus(request.getStatus(), newStatus)) {
             throw new IllegalStateException("Недопустимый переход статуса: " + request.getStatus() + " -> " + newStatus);
+        }
+
+        if (newStatus == ServerRequest.RequestStatus.APPROVED && request.getServer() == null) {
+            Server server = findBestFitServer(request.getCpuCores(), request.getRamGb(), request.getDiskGb())
+                    .orElseThrow(() -> new InsufficientResourcesException("Нет включённого сервера с достаточными ресурсами"));
+            server.allocate(request.getCpuCores(), request.getRamGb(), request.getDiskGb());
+            server.addRequestToHistory(request.getId());
+            serverRepository.save(server);
+            request.setServer(server);
         }
 
         if (newStatus == ServerRequest.RequestStatus.CANCELLED && request.getServer() != null) {

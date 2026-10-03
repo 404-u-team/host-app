@@ -112,6 +112,18 @@ public class ApiClient {
         return objectMapper.readValue(response.body(), responseType);
     }
 
+    public <T> T patch(String path, Class<T> responseType) throws IOException, InterruptedException {
+        HttpRequest request = HttpRequest.newBuilder()
+            .uri(URI.create(baseUrl + path))
+            .header("User-Agent", "host-app-cli/1.0")
+            .method("PATCH", HttpRequest.BodyPublishers.noBody())
+            .build();
+
+        HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+        checkResponse(response.statusCode(), response.body());
+        return objectMapper.readValue(response.body(), responseType);
+    }
+
     public void delete(String path) throws IOException, InterruptedException {
         HttpRequest request = HttpRequest.newBuilder()
             .uri(URI.create(baseUrl + path))
