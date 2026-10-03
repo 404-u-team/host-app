@@ -1,6 +1,6 @@
 package dev.hostapp.backend.service;
 
-import dev.hostapp.backend.exception.UserNotFoundException;
+import dev.hostapp.backend.exceptions.UserNotFoundException;
 import dev.hostapp.backend.model.User;
 import dev.hostapp.backend.repository.UserRepository;
 import org.springframework.stereotype.Service;

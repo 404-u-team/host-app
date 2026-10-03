@@ -1,7 +1,7 @@
 package dev.hostapp.backend.middleware;
 
 import dev.hostapp.backend.model.User;
-import dev.hostapp.backend.exception.UnauthorizedException;
+import dev.hostapp.backend.exceptions.UnauthorizedException;
 import dev.hostapp.backend.service.AuthService;
 
 import jakarta.servlet.http.Cookie;

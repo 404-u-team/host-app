@@ -20,6 +20,13 @@ public interface ServerRequestRepository extends JpaRepository<ServerRequest, UU
     // === Базовые поиски (по User объекту) ===
     List<ServerRequest> findAllByOwner(User owner);
 
+    @Query("SELECT DISTINCT r.server FROM ServerRequest r WHERE r.owner = :owner AND r.server IS NOT NULL")
+    List<Server> findAssignedServersByOwner(@Param("owner") User owner);
+
+    boolean existsByOwner_IdAndServer_Id(UUID ownerId, UUID serverId);
+
+    boolean existsByServer_Id(UUID serverId);
+
     List<ServerRequest> findAllByStatus(ServerRequest.RequestStatus status);
 
     List<ServerRequest> findAllByOwnerAndStatus(User owner, ServerRequest.RequestStatus status);

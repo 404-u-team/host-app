@@ -1,9 +1,9 @@
 package dev.hostapp.backend.controller;
 
-import dev.hostapp.backend.dto.CreateServerRequest;
-import dev.hostapp.backend.dto.ServerRequestResponse;
-import dev.hostapp.backend.dto.StatisticsResponse;
-import dev.hostapp.backend.dto.UpdateServerRequest;
+import dev.hostapp.backend.dto.serverrequest.CreateServerRequest;
+import dev.hostapp.backend.dto.serverrequest.ServerRequestResponse;
+import dev.hostapp.backend.dto.serverrequest.StatisticsResponse;
+import dev.hostapp.backend.dto.serverrequest.UpdateServerRequest;
 import dev.hostapp.backend.model.ServerRequest;
 import dev.hostapp.backend.model.User;
 import dev.hostapp.backend.service.ServerRequestService;
@@ -47,7 +47,7 @@ public class ServerRequestController {
             @Valid @RequestBody CreateServerRequest dto
     ) {
         ServerRequestResponse response = requestService.create(currentUser, dto);
-        return ResponseEntity.status(HttpStatus.CREATED).body(response.id);
+        return ResponseEntity.status(HttpStatus.CREATED).body(response.id());
     }
 
     @GetMapping("/{uuid}")
@@ -165,9 +165,9 @@ public class ServerRequestController {
             @PathVariable UUID uuid
     ) {
         ServerRequestResponse response = requestService.get(uuid, currentUser, false);
-        if (response.serverId == null) {
+        if (response.serverId() == null) {
             return ResponseEntity.notFound().build();
         }
-        return ResponseEntity.ok(response.serverId);
+        return ResponseEntity.ok(response.serverId());
     }
 }

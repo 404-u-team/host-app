@@ -1,11 +1,11 @@
 package dev.hostapp.backend.service;
 
-import dev.hostapp.backend.dto.CreateServerRequest;
-import dev.hostapp.backend.dto.ServerRequestResponse;
-import dev.hostapp.backend.dto.StatisticsResponse;
-import dev.hostapp.backend.dto.UpdateServerRequest;
-import dev.hostapp.backend.exception.ForbiddenException;
-import dev.hostapp.backend.exception.ResourceNotFoundException;
+import dev.hostapp.backend.dto.serverrequest.CreateServerRequest;
+import dev.hostapp.backend.dto.serverrequest.ServerRequestResponse;
+import dev.hostapp.backend.dto.serverrequest.StatisticsResponse;
+import dev.hostapp.backend.dto.serverrequest.UpdateServerRequest;
+import dev.hostapp.backend.exceptions.ForbiddenException;
+import dev.hostapp.backend.exceptions.ResourceNotFoundException;
 import dev.hostapp.backend.model.Server;
 import dev.hostapp.backend.model.ServerRequest;
 import dev.hostapp.backend.model.User;
@@ -42,15 +42,15 @@ public class ServerRequestService {
 
     @Transactional
     public ServerRequestResponse create(User owner, CreateServerRequest dto) {
-        validateResources(dto.cpuCores, dto.ramGb, dto.diskGb, dto.os);
+        validateResources(dto.cpuCores(), dto.ramGb(), dto.diskGb(), dto.os());
 
-        ServerRequest request = new ServerRequest(owner, dto.cpuCores, dto.ramGb, dto.diskGb, dto.os.trim());
+        ServerRequest request = new ServerRequest(owner, dto.cpuCores(), dto.ramGb(), dto.diskGb(), dto.os().trim());
         request = requestRepository.save(request);
 
-        Optional<Server> server = findBestFitServer(dto.cpuCores, dto.ramGb, dto.diskGb);
+        Optional<Server> server = findBestFitServer(dto.cpuCores(), dto.ramGb(), dto.diskGb());
         if (server.isPresent()) {
             Server selectedServer = server.get();
-            selectedServer.allocate(dto.cpuCores, dto.ramGb, dto.diskGb);
+            selectedServer.allocate(dto.cpuCores(), dto.ramGb(), dto.diskGb());
             selectedServer.addRequestToHistory(request.getId());
             serverRepository.save(selectedServer);
             request.setServer(selectedServer);
@@ -76,11 +76,11 @@ public class ServerRequestService {
             throw new IllegalStateException("Изменить можно только заявку со статусом CREATED");
         }
 
-        validateResources(dto.cpuCores, dto.ramGb, dto.diskGb, dto.os);
-        request.setCpuCores(dto.cpuCores);
-        request.setRamGb(dto.ramGb);
-        request.setDiskGb(dto.diskGb);
-        request.setOs(dto.os.trim());
+        validateResources(dto.cpuCores(), dto.ramGb(), dto.diskGb(), dto.os());
+        request.setCpuCores(dto.cpuCores());
+        request.setRamGb(dto.ramGb());
+        request.setDiskGb(dto.diskGb());
+        request.setOs(dto.os().trim());
         return toResponse(requestRepository.save(request));
     }
 

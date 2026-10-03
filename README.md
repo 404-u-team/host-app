@@ -1,16 +1,25 @@
 # Host App
 
-Для запуска нужны JDK 17, Maven и Docker Compose.
+## Backend в Docker Compose
 
-## PostgreSQL и backend
+Полный запуск backend и PostgreSQL из каталога `host-app-backend`:
 
 ```sh
 cd host-app-backend
-docker compose -f docker-compose.dev.yaml up -d
-mvn spring-boot:run
+docker compose up --build
 ```
 
+API: http://localhost:8080  
 Swagger: http://localhost:8080/swagger-ui.html
+
+Чтобы остановить контейнеры, нажмите `Ctrl+C` или выполните `docker compose down`. Данные PostgreSQL сохраняются в Docker volume. Удалить базу вместе с volume можно командой `docker compose down -v`.
+
+Для локальной разработки с запуском Spring Boot через Maven используйте только PostgreSQL из каталога `host-app-backend`:
+
+```sh
+docker compose -f docker-compose.dev.yaml up -d
+./mvnw spring-boot:run
+```
 
 При первом запуске создаются демонстрационные пользователи и заявки. Для входа:
 

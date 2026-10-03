@@ -3,6 +3,7 @@ package dev.hostapp.cli;
 import dev.hostapp.cli.api.ApiClient;
 import dev.hostapp.cli.api.AuthApi;
 import dev.hostapp.cli.api.ServerRequestApi;
+import dev.hostapp.cli.api.ServerApi;
 import dev.hostapp.cli.screens.BaseScreen;
 import dev.hostapp.cli.screens.MainMenuScreen;
 import dev.hostapp.cli.screens.auth.LoginScreen;
@@ -21,6 +22,7 @@ public class App {
 
         AuthApi authApi = new AuthApi(apiClient);
         ServerRequestApi requestApi = new ServerRequestApi(apiClient);
+        ServerApi serverApi = new ServerApi(apiClient);
 
         BaseScreen registerScreen = new RegisterScreen(
             scanner,
@@ -47,7 +49,7 @@ public class App {
 
                 case "2" -> {
                     if (loginScreen.login()) {
-                        new MainMenuScreen(scanner, requestApi).show();
+                        new MainMenuScreen(scanner, requestApi, serverApi, loginScreen.isAdmin()).show();
                         System.out.println("До свидания!");
                         scanner.close();
                         return;
