@@ -1,6 +1,7 @@
 package dev.hostapp.cli.screens;
 
 import dev.hostapp.cli.dto.ServerRequestResponse;
+import dev.hostapp.cli.dto.server.ServerResponse;
 
 import java.util.List;
 import java.util.Scanner;
@@ -90,6 +91,29 @@ public abstract class BaseScreen {
         for (ServerRequestResponse request : requests) {
             System.out.println();
             printRequest(request);
+        }
+    }
+
+    protected void printServer(ServerResponse server) {
+        System.out.println("ID: " + server.id());
+        System.out.println("Имя: " + server.hostname() + " | Статус: " + server.status());
+        System.out.println("IPv4: " + String.join(", ", server.ipv4Addresses()));
+        System.out.println("IPv6: " + String.join(", ", server.ipv6Addresses()));
+        System.out.println("CPU: " + server.availableCpuCores() + "/" + server.cpuCores()
+                + " ядер свободно | RAM: " + server.availableRamGb() + "/" + server.ramGb()
+                + " GB свободно | Disk: " + server.availableDiskGb() + "/" + server.diskGb()
+                + " GB свободно");
+        System.out.println("Создан: " + server.createdAt());
+    }
+
+    protected void printServers(List<ServerResponse> servers) {
+        if (servers.isEmpty()) {
+            System.out.println("Серверов нет");
+            return;
+        }
+        for (ServerResponse server : servers) {
+            System.out.println();
+            printServer(server);
         }
     }
 }

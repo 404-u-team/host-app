@@ -98,6 +98,20 @@ public class ApiClient {
         return objectMapper.readValue(response.body(), responseType);
     }
 
+    public <T> T patch(String path, Object body, Class<T> responseType) throws IOException, InterruptedException {
+        String json = objectMapper.writeValueAsString(body);
+        HttpRequest request = HttpRequest.newBuilder()
+            .uri(URI.create(baseUrl + path))
+            .header("Content-Type", "application/json")
+            .header("User-Agent", "host-app-cli/1.0")
+            .method("PATCH", HttpRequest.BodyPublishers.ofString(json))
+            .build();
+
+        HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+        checkResponse(response.statusCode(), response.body());
+        return objectMapper.readValue(response.body(), responseType);
+    }
+
     public void delete(String path) throws IOException, InterruptedException {
         HttpRequest request = HttpRequest.newBuilder()
             .uri(URI.create(baseUrl + path))

@@ -1,4 +1,4 @@
-package dev.hostapp.backend.dto;
+package dev.hostapp.backend.dto.error;
 
 public record ErrorResponse(
     int status,

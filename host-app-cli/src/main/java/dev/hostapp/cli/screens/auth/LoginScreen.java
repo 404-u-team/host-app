@@ -9,6 +9,7 @@ import java.util.Scanner;
 public class LoginScreen extends BaseScreen {
 
     private final AuthApi authApi;
+    private boolean admin;
 
     public LoginScreen(
         Scanner scanner,
@@ -35,6 +36,7 @@ public class LoginScreen extends BaseScreen {
                 email,
                 password
             );
+            admin = "ADMIN".equalsIgnoreCase(response.email());
 
             System.out.println();
             System.out.println("Вход выполнен. Добро пожаловать, " + response.name() + "!");
@@ -44,5 +46,9 @@ public class LoginScreen extends BaseScreen {
             printError(e.getMessage());
             return false;
         }
+    }
+
+    public boolean isAdmin() {
+        return admin;
     }
 }

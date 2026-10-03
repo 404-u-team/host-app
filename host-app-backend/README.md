@@ -1,15 +1,24 @@
-## Начало работы:
+## Запуск всего backend через Docker Compose
 
-JDK 21+
-Maven
+Из каталога `host-app-backend`:
 
+```sh
+docker compose up --build
+```
 
-### Запуск 
+Команда собирает backend-образ, запускает PostgreSQL и ждёт готовности базы перед запуском приложения.
+Swagger UI: http://localhost:8080/swagger-ui.html
+
+Параметры можно переопределить переменными окружения или в `.env`: `POSTGRES_DB`, `POSTGRES_USER`, `POSTGRES_PASSWORD`, `POSTGRES_PORT` и `BACKEND_PORT`. Значения по умолчанию предназначены для локальной разработки.
+
+Для локальной разработки с запуском приложения через Maven поднимите только PostgreSQL:
 
 ```
 docker compose -f docker-compose.dev.yaml up -d
-mvn spring-boot:run
+./mvnw spring-boot:run
 ```
+
+Требуется JDK 17 и Maven (для локального запуска; в Docker используются готовые образы Java и Maven).
 
 ## ТРЕБОВАНИЯ
 

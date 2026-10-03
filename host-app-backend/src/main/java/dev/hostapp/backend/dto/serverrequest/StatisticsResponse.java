@@ -1,4 +1,4 @@
-package dev.hostapp.backend.dto;
+package dev.hostapp.backend.dto.serverrequest;
 
 public record StatisticsResponse(
         long total,

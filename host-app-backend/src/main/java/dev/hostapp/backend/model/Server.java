@@ -209,6 +209,23 @@ public class Server {
         this.diskGb = diskGb;
     }
 
+    public void resizeCapacity(Integer cpuCores, Integer ramGb, Integer diskGb) {
+        int allocatedCpuCores = this.cpuCores - this.availableCpuCores;
+        int allocatedRamGb = this.ramGb - this.availableRamGb;
+        int allocatedDiskGb = this.diskGb - this.availableDiskGb;
+
+        if (cpuCores < allocatedCpuCores || ramGb < allocatedRamGb || diskGb < allocatedDiskGb) {
+            throw new IllegalStateException("Новые ресурсы меньше уже занятых");
+        }
+
+        this.cpuCores = cpuCores;
+        this.ramGb = ramGb;
+        this.diskGb = diskGb;
+        this.availableCpuCores = cpuCores - allocatedCpuCores;
+        this.availableRamGb = ramGb - allocatedRamGb;
+        this.availableDiskGb = diskGb - allocatedDiskGb;
+    }
+
     public Integer getAvailableCpuCores() {
         return availableCpuCores;
     }

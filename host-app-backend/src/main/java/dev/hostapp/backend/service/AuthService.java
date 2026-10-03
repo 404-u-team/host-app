@@ -1,8 +1,8 @@
 package dev.hostapp.backend.service;
 
-import dev.hostapp.backend.exception.UnauthorizedException;
-import dev.hostapp.backend.exception.UserAlreadyExistsException;
-import dev.hostapp.backend.exception.UserNotFoundException;
+import dev.hostapp.backend.exceptions.UnauthorizedException;
+import dev.hostapp.backend.exceptions.UserAlreadyExistsException;
+import dev.hostapp.backend.exceptions.UserNotFoundException;
 import dev.hostapp.backend.model.Device;
 import dev.hostapp.backend.model.User;
 import dev.hostapp.backend.repository.DeviceRepository;

@@ -1,4 +1,4 @@
-package dev.hostapp.backend.exception;
+package dev.hostapp.backend.exceptions;
 
 public class ResourceNotFoundException extends RuntimeException {
     public ResourceNotFoundException(String message) {
