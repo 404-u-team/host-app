@@ -23,7 +23,6 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.Comparator;
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 
 @Service
@@ -57,7 +56,7 @@ public class ServerRequestService {
 
     @Transactional
     public ServerRequestResponse update(UUID requestId, User currentUser, UpdateServerRequest dto, boolean isAdmin) {
-        ServerRequest request = findRequest(requestId);
+        ServerRequest request = findRequestForUpdate(requestId);
         checkAccess(request, currentUser, isAdmin);
         if (request.getStatus() != ServerRequest.RequestStatus.CREATED) {
             throw new IllegalStateException("Изменить можно только заявку со статусом CREATED");
@@ -73,7 +72,7 @@ public class ServerRequestService {
 
     @Transactional
     public void delete(UUID requestId, User currentUser, boolean isAdmin) {
-        ServerRequest request = findRequest(requestId);
+        ServerRequest request = findRequestForUpdate(requestId);
         checkAccess(request, currentUser, isAdmin);
 
         if (request.getServer() != null) {
@@ -195,7 +194,7 @@ public class ServerRequestService {
 
     @Transactional
     public ServerRequestResponse updateStatus(UUID requestId, ServerRequest.RequestStatus newStatus) {
-        ServerRequest request = findRequest(requestId);
+        ServerRequest request = findRequestForUpdate(requestId);
         if (!canChangeStatus(request.getStatus(), newStatus)) {
             throw new IllegalStateException("Недопустимый переход статуса: " + request.getStatus() + " -> " + newStatus);
         }
@@ -205,8 +204,10 @@ public class ServerRequestService {
                     "server-" + request.getId(),
                     request.getCpuCores(),
                     request.getRamGb(),
-                    request.getDiskGb()
+                    request.getDiskGb(),
+                    request.getOs()
             );
+            server.allocate(request.getCpuCores(), request.getRamGb(), request.getDiskGb());
             server.addRequestToHistory(request.getId());
             request.setServer(serverRepository.save(server));
         }
@@ -220,6 +221,11 @@ public class ServerRequestService {
 
         request.setStatus(newStatus);
         return toResponse(requestRepository.save(request));
+    }
+
+    private ServerRequest findRequestForUpdate(UUID requestId) {
+        return requestRepository.findByIdForUpdate(requestId)
+                .orElseThrow(() -> new ResourceNotFoundException("Заявка не найдена: " + requestId));
     }
 
     private ServerRequest findRequest(UUID requestId) {
@@ -253,7 +259,7 @@ public class ServerRequestService {
 
     private boolean canChangeStatus(ServerRequest.RequestStatus oldStatus, ServerRequest.RequestStatus newStatus) {
         return switch (oldStatus) {
-            case CREATED -> newStatus == ServerRequest.RequestStatus.APPROVED
+            case CREATED -> newStatus == ServerRequest.RequestStatus.COMPLETED
                     || newStatus == ServerRequest.RequestStatus.REJECTED
                     || newStatus == ServerRequest.RequestStatus.CANCELLED;
             case APPROVED -> newStatus == ServerRequest.RequestStatus.COMPLETED

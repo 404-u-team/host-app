@@ -45,6 +45,9 @@ public class Server {
     @Column(nullable = false)
     private ServerStatus status = ServerStatus.OFF;
 
+    @Column
+    private String os;
+
     // === Ресурсы сервера (физические) ===
     @Column(name = "cpu_cores", nullable = false)
     private Integer cpuCores;
@@ -78,7 +81,8 @@ public class Server {
     protected Server() {
     }
 
-    public Server(String hostname, Integer cpuCores, Integer ramGb, Integer diskGb) {
+    public Server(String hostname, Integer cpuCores, Integer ramGb, Integer diskGb, String os) {
+        this.os = os;
         this.hostname = hostname;
         this.cpuCores = cpuCores;
         this.ramGb = ramGb;
@@ -141,6 +145,10 @@ public class Server {
     public void addRequestToHistory(UUID requestId) {
         if (requestId != null)
             this.requestIdsHistory.add(requestId);
+    }
+
+    public String getOs() {
+        return os;
     }
 
     public String getHostname() {

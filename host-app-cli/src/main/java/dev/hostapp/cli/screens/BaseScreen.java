@@ -98,6 +98,7 @@ public abstract class BaseScreen {
     protected void printServer(ServerResponse server) {
         System.out.println("ID: " + server.id());
         System.out.println("Имя: " + server.hostname() + " | Статус: " + server.status());
+        System.out.println("OS: " + server.os());
         System.out.println("IPv4: " + String.join(", ", server.ipv4Addresses()));
         System.out.println("IPv6: " + String.join(", ", server.ipv6Addresses()));
         System.out.println("CPU: " + server.availableCpuCores() + "/" + server.cpuCores()

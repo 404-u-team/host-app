@@ -35,8 +35,8 @@ public class FilterScreen extends BaseScreen {
     }
 
     private void filterByStatus() {
-        String status = readChoice("Статус (CREATED, APPROVED, REJECTED, COMPLETED, CANCELLED): ",
-                "CREATED", "APPROVED", "REJECTED", "COMPLETED", "CANCELLED");
+        String status = readChoice("Статус (CREATED, REJECTED, COMPLETED, CANCELLED): ",
+                "CREATED", "REJECTED", "COMPLETED", "CANCELLED");
         try {
             printRequests(requestApi.filterByStatus(status));
         } catch (Exception exception) {

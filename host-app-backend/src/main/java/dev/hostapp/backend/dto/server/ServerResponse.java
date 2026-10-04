@@ -10,6 +10,7 @@ import java.util.UUID;
 public record ServerResponse(
         UUID id,
         String hostname,
+        String os,
         @JsonProperty("ipv4_addresses") List<String> ipv4Addresses,
         @JsonProperty("ipv6_addresses") List<String> ipv6Addresses,
         Server.ServerStatus status,
@@ -26,6 +27,7 @@ public record ServerResponse(
         return new ServerResponse(
                 server.getId(),
                 server.getHostname(),
+                server.getOs(),
                 List.copyOf(server.getIpv4Addresses()),
                 List.copyOf(server.getIpv6Addresses()),
                 server.getStatus(),

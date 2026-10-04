@@ -17,3 +17,6 @@ Thumbs.db
 
 # Logs
 *.log
+
+# Generated request export
+server-requests.xlsx

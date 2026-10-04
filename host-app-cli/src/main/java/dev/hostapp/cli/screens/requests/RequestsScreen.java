@@ -109,8 +109,8 @@ public class RequestsScreen extends BaseScreen {
     private void updateStatus() {
         UUID id = readUuid("ID заявки: ");
         String status = readChoice(
-                "Новый статус (APPROVED, REJECTED, COMPLETED, CANCELLED): ",
-                "APPROVED", "REJECTED", "COMPLETED", "CANCELLED"
+                "Новый статус (COMPLETED, REJECTED, CANCELLED): ",
+                "COMPLETED", "REJECTED", "CANCELLED"
         );
         try {
             printRequest(requestApi.updateStatus(id, status));

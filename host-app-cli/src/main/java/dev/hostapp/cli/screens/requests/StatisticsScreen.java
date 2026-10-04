@@ -21,7 +21,6 @@ public class StatisticsScreen extends BaseScreen {
             StatisticsResponse statistics = requestApi.getStatistics();
             System.out.println("Всего заявок: " + statistics.total());
             System.out.println("CREATED: " + statistics.created());
-            System.out.println("APPROVED: " + statistics.approved());
             System.out.println("REJECTED: " + statistics.rejected());
             System.out.println("COMPLETED: " + statistics.completed());
             System.out.println("CANCELLED: " + statistics.cancelled());
