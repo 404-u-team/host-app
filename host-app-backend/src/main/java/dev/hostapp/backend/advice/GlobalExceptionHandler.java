@@ -4,7 +4,6 @@ import dev.hostapp.backend.dto.error.CodeErrorResponse;
 import dev.hostapp.backend.dto.error.ErrorResponse;
 import dev.hostapp.backend.dto.error.ValidationErrorResponse;
 import dev.hostapp.backend.exceptions.ForbiddenException;
-import dev.hostapp.backend.exceptions.InsufficientResourcesException;
 import dev.hostapp.backend.exceptions.ResourceNotFoundException;
 import dev.hostapp.backend.exceptions.UnauthorizedException;
 import dev.hostapp.backend.exceptions.UserAlreadyExistsException;
@@ -56,12 +55,6 @@ public class GlobalExceptionHandler {
     public ResponseEntity<CodeErrorResponse> handleForbidden(ForbiddenException ex) {
         return ResponseEntity.status(HttpStatus.FORBIDDEN)
                 .body(new CodeErrorResponse("FORBIDDEN", ex.getMessage()));
-    }
-
-    @ExceptionHandler(InsufficientResourcesException.class)
-    public ResponseEntity<CodeErrorResponse> handleInsufficientResources(InsufficientResourcesException ex) {
-        return ResponseEntity.status(HttpStatus.CONFLICT)
-                .body(new CodeErrorResponse("INSUFFICIENT_RESOURCES", ex.getMessage()));
     }
 
     @ExceptionHandler(IllegalStateException.class)

@@ -8,15 +8,12 @@ import java.util.UUID;
 import jakarta.persistence.Column;
 import jakarta.persistence.ElementCollection;
 import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
-import jakarta.persistence.Version;
 
 @Entity
 @Table(name = "servers")
@@ -25,10 +22,6 @@ public class Server {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
-
-    @ElementCollection
-    @Column(name = "request_id")
-    private List<UUID> requestIdsHistory = new ArrayList<>();
 
     @Column(nullable = false, unique = true)
     private String hostname;
@@ -41,14 +34,9 @@ public class Server {
     @Column(name = "ipv6_address")
     private List<String> ipv6Addresses = new ArrayList<>();
 
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
-    private ServerStatus status = ServerStatus.OFF;
-
     @Column
     private String os;
 
-    // === Ресурсы сервера (физические) ===
     @Column(name = "cpu_cores", nullable = false)
     private Integer cpuCores;
 
@@ -57,20 +45,6 @@ public class Server {
 
     @Column(name = "disk_gb", nullable = false)
     private Integer diskGb;
-
-    // === Доступные (свободные) ресурсы для бронирования ===
-    @Column(name = "available_cpu_cores", nullable = false)
-    private Integer availableCpuCores;
-
-    @Column(name = "available_ram_gb", nullable = false)
-    private Integer availableRamGb;
-
-    @Column(name = "available_disk_gb", nullable = false)
-    private Integer availableDiskGb;
-
-    @Version
-    @Column(name = "version", nullable = false)
-    private Long version = 0L;
 
     @Column(name = "created_at", nullable = false, updatable = false)
     private Instant createdAt;
@@ -87,10 +61,6 @@ public class Server {
         this.cpuCores = cpuCores;
         this.ramGb = ramGb;
         this.diskGb = diskGb;
-        // Изначально все ресурсы свободны
-        this.availableCpuCores = cpuCores;
-        this.availableRamGb = ramGb;
-        this.availableDiskGb = diskGb;
     }
 
     @PrePersist
@@ -104,47 +74,8 @@ public class Server {
         updatedAt = Instant.now();
     }
 
-    // === Логика бронирования ресурсов ===
-    public boolean canAllocate(Integer cpuCores, Integer ramGb, Integer diskGb) {
-        return availableCpuCores >= cpuCores
-                && availableRamGb >= ramGb
-                && availableDiskGb >= diskGb;
-    }
-
-    public void allocate(Integer cpuCores, Integer ramGb, Integer diskGb) {
-        if (!canAllocate(cpuCores, ramGb, diskGb)) {
-            throw new IllegalStateException("Недостаточно ресурсов на сервере " + hostname);
-        }
-        this.availableCpuCores -= cpuCores;
-        this.availableRamGb -= ramGb;
-        this.availableDiskGb -= diskGb;
-    }
-
-    public void release(Integer cpuCores, Integer ramGb, Integer diskGb) {
-        this.availableCpuCores += cpuCores;
-        this.availableRamGb += ramGb;
-        this.availableDiskGb += diskGb;
-        // Не превышаем total
-        this.availableCpuCores = Math.min(this.availableCpuCores, this.cpuCores);
-        this.availableRamGb = Math.min(this.availableRamGb, this.ramGb);
-        this.availableDiskGb = Math.min(this.availableDiskGb, this.diskGb);
-    }
-
     public UUID getId() {
         return id;
-    }
-
-    public List<UUID> getRequestIdsHistory() {
-        return requestIdsHistory;
-    }
-
-    public void setRequestIdsHistory(List<UUID> requestIdsHistory) {
-        this.requestIdsHistory = requestIdsHistory != null ? requestIdsHistory : new ArrayList<>();
-    }
-
-    public void addRequestToHistory(UUID requestId) {
-        if (requestId != null)
-            this.requestIdsHistory.add(requestId);
     }
 
     public String getOs() {
@@ -167,30 +98,12 @@ public class Server {
         this.ipv4Addresses = ipv4Addresses != null ? ipv4Addresses : new ArrayList<>();
     }
 
-    public void addIpv4Address(String ip) {
-        if (ip != null)
-            this.ipv4Addresses.add(ip);
-    }
-
     public List<String> getIpv6Addresses() {
         return ipv6Addresses;
     }
 
     public void setIpv6Addresses(List<String> ipv6Addresses) {
         this.ipv6Addresses = ipv6Addresses != null ? ipv6Addresses : new ArrayList<>();
-    }
-
-    public void addIpv6Address(String ip) {
-        if (ip != null)
-            this.ipv6Addresses.add(ip);
-    }
-
-    public ServerStatus getStatus() {
-        return status;
-    }
-
-    public void setStatus(ServerStatus status) {
-        this.status = status;
     }
 
     public Integer getCpuCores() {
@@ -217,35 +130,6 @@ public class Server {
         this.diskGb = diskGb;
     }
 
-    public void resizeCapacity(Integer cpuCores, Integer ramGb, Integer diskGb) {
-        int allocatedCpuCores = this.cpuCores - this.availableCpuCores;
-        int allocatedRamGb = this.ramGb - this.availableRamGb;
-        int allocatedDiskGb = this.diskGb - this.availableDiskGb;
-
-        if (cpuCores < allocatedCpuCores || ramGb < allocatedRamGb || diskGb < allocatedDiskGb) {
-            throw new IllegalStateException("Новые ресурсы меньше уже занятых");
-        }
-
-        this.cpuCores = cpuCores;
-        this.ramGb = ramGb;
-        this.diskGb = diskGb;
-        this.availableCpuCores = cpuCores - allocatedCpuCores;
-        this.availableRamGb = ramGb - allocatedRamGb;
-        this.availableDiskGb = diskGb - allocatedDiskGb;
-    }
-
-    public Integer getAvailableCpuCores() {
-        return availableCpuCores;
-    }
-
-    public Integer getAvailableRamGb() {
-        return availableRamGb;
-    }
-
-    public Integer getAvailableDiskGb() {
-        return availableDiskGb;
-    }
-
     public Instant getCreatedAt() {
         return createdAt;
     }
@@ -254,7 +138,4 @@ public class Server {
         return updatedAt;
     }
 
-    public enum ServerStatus {
-        OFF, ON, SUSPENDED
-    }
 }

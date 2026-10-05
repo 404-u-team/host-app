@@ -23,7 +23,6 @@ public interface ServerRequestRepository extends JpaRepository<ServerRequest, UU
     @Query("SELECT r FROM ServerRequest r WHERE r.id = :id")
     Optional<ServerRequest> findByIdForUpdate(@Param("id") UUID id);
 
-    // === Базовые поиски (по User объекту) ===
     List<ServerRequest> findAllByOwner(User owner);
 
     @Query("SELECT DISTINCT r.server FROM ServerRequest r WHERE r.owner = :owner AND r.server IS NOT NULL")
@@ -36,12 +35,14 @@ public interface ServerRequestRepository extends JpaRepository<ServerRequest, UU
 
     boolean existsByServer_Id(UUID serverId);
 
-    List<ServerRequest> findAllByStatus(ServerRequest.RequestStatus status);
-
     List<ServerRequest> findAllByOwnerAndStatus(User owner, ServerRequest.RequestStatus status);
 
-    // === Базовые поиски (по ownerId — UUID) ===
-    List<ServerRequest> findAllByOwnerId(UUID ownerId);
+    List<ServerRequest> findAllByStatus(ServerRequest.RequestStatus status);
+
+    List<ServerRequest> findAllByOwnerAndOsContainingIgnoreCase(User owner, String os);
+
+    List<ServerRequest> findAllByOwnerAndCpuCoresGreaterThanEqual(User owner, Integer cpuCores);
+
 
     List<ServerRequest> findAllByOwnerIdAndStatus(UUID ownerId, ServerRequest.RequestStatus status);
 

@@ -30,33 +30,18 @@ public class ServersScreen extends BaseScreen {
             System.out.println("2. Получить сервер по ID");
             if (admin) {
                 System.out.println("3. Изменить сервер");
-                System.out.println("4. Запустить сервер");
-                System.out.println("5. Остановить сервер");
-                System.out.println("6. Изменить статус");
-                System.out.println("7. Удалить сервер");
+                System.out.println("4. Удалить сервер");
             }
             System.out.println("0. Назад");
 
             switch (readLine("Выберите пункт: ")) {
                 case "1" -> showAll();
                 case "2" -> showById();
-                case "4" -> {
-                    if (admin) updateStatus("ON");
-                    else printError("неизвестный пункт меню");
-                }
                 case "3" -> {
                     if (admin) update();
                     else printError("неизвестный пункт меню");
                 }
-                case "5" -> {
-                    if (admin) updateStatus("OFF");
-                    else printError("неизвестный пункт меню");
-                }
-                case "6" -> {
-                    if (admin) chooseStatus();
-                    else printError("неизвестный пункт меню");
-                }
-                case "7" -> {
+                case "4" -> {
                     if (admin) delete();
                     else printError("неизвестный пункт меню");
                 }
@@ -117,34 +102,15 @@ public class ServersScreen extends BaseScreen {
                 .toList();
     }
 
-    private void updateStatus(String status) {
-        UUID id = readUuid("ID сервера: ");
-        try {
-            printServer(serverApi.updateStatus(id, status));
-        } catch (Exception exception) {
-            printError(exception.getMessage());
-        }
-    }
-
-    private void chooseStatus() {
-        UUID id = readUuid("ID сервера: ");
-        String status = readChoice("Статус (ON, OFF, SUSPENDED): ", "ON", "OFF", "SUSPENDED");
-        try {
-            printServer(serverApi.updateStatus(id, status));
-        } catch (Exception exception) {
-            printError(exception.getMessage());
-        }
-    }
-
     private void delete() {
         UUID id = readUuid("ID сервера: ");
-        String confirmation = readChoice("Удалить сервер? (ДА/НЕТ): ", "ДА", "НЕТ");
+        String confirmation = readChoice("Удалить сервер и все связанные заявки? (ДА/НЕТ): ", "ДА", "НЕТ");
         if (confirmation.equals("НЕТ")) {
             return;
         }
         try {
             serverApi.delete(id);
-            System.out.println("Сервер удалён");
+            System.out.println("Сервер и связанные заявки удалены");
         } catch (Exception exception) {
             printError(exception.getMessage());
         }

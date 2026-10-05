@@ -5,10 +5,6 @@ import dev.hostapp.backend.model.User;
 import dev.hostapp.backend.repository.UserRepository;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
-import java.util.Optional;
-
-
 @Service
 public class UserService {
     private final UserRepository repository;
@@ -18,11 +14,8 @@ public class UserService {
     }
 
     public User getByEmail(String email) {
-        final Optional<User> user = repository.findByEmail(email);
-        if (!user.isPresent()) {
-            throw new UserNotFoundException("User not found");
-        }
-        return user.get();
+        return repository.findByEmail(email)
+                .orElseThrow(() -> new UserNotFoundException("User not found"));
     }
 
     public boolean emailExists(String email) {
@@ -33,9 +26,5 @@ public class UserService {
         User user = new User(name, surname, email, passwordHash);
 
         return repository.save(user);
-    }
-
-    public List<User> getAll() {
-        return repository.findAll();
     }
 }

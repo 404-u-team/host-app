@@ -74,11 +74,8 @@ public class ServerRequestService {
     public void delete(UUID requestId, User currentUser, boolean isAdmin) {
         ServerRequest request = findRequestForUpdate(requestId);
         checkAccess(request, currentUser, isAdmin);
-
-        if (request.getServer() != null) {
-            Server server = request.getServer();
-            server.release(request.getCpuCores(), request.getRamGb(), request.getDiskGb());
-            serverRepository.save(server);
+        if (request.getStatus() == ServerRequest.RequestStatus.COMPLETED) {
+            throw new IllegalStateException("Нельзя удалить выполненную заявку");
         }
 
         requestRepository.delete(request);
@@ -96,47 +93,45 @@ public class ServerRequestService {
                 .toList();
     }
 
-    public List<ServerRequestResponse> getAllByOwner(UUID ownerId) {
-        return requestRepository.findAllByOwnerId(ownerId).stream()
-                .map(this::toResponse)
-                .toList();
-    }
-
     public Page<ServerRequestResponse> getAll(Pageable pageable) {
         return requestRepository.findAll(pageable).map(this::toResponse);
     }
 
-    public List<ServerRequestResponse> searchByOs(User owner, String os) {
-        return requestRepository.findAllByOsContainingIgnoreCase(os).stream()
-                .filter(request -> request.getOwner().getId().equals(owner.getId()))
+    public List<ServerRequestResponse> searchByOs(User owner, String os, boolean isAdmin) {
+        List<ServerRequest> requests = isAdmin
+                ? requestRepository.findAllByOsContainingIgnoreCase(os)
+                : requestRepository.findAllByOwnerAndOsContainingIgnoreCase(owner, os);
+        return requests.stream()
                 .map(this::toResponse)
                 .toList();
     }
 
-    public List<ServerRequestResponse> searchByMinCpu(User owner, int minCpu) {
+    public List<ServerRequestResponse> searchByMinCpu(User owner, int minCpu, boolean isAdmin) {
         if (minCpu <= 0) {
             throw new IllegalArgumentException("CPU должен быть больше 0");
         }
-        return requestRepository.findAllByCpuCoresGreaterThanEqual(minCpu).stream()
-                .filter(request -> request.getOwner().getId().equals(owner.getId()))
+        List<ServerRequest> requests = isAdmin
+                ? requestRepository.findAllByCpuCoresGreaterThanEqual(minCpu)
+                : requestRepository.findAllByOwnerAndCpuCoresGreaterThanEqual(owner, minCpu);
+        return requests.stream()
                 .map(this::toResponse)
                 .toList();
     }
 
-    public List<ServerRequestResponse> filterByStatus(User owner, ServerRequest.RequestStatus status) {
-        return requestRepository.findAllByOwnerAndStatus(owner, status).stream()
+    public List<ServerRequestResponse> filterByStatus(User owner, ServerRequest.RequestStatus status, boolean isAdmin) {
+        List<ServerRequest> requests = isAdmin
+                ? requestRepository.findAllByStatus(status)
+                : requestRepository.findAllByOwnerAndStatus(owner, status);
+        return requests.stream()
                 .map(this::toResponse)
                 .toList();
     }
 
-    public List<ServerRequestResponse> filterByOs(User owner, String os) {
-        return requestRepository.findAllByOwner(owner).stream()
-                .filter(request -> request.getOs().toLowerCase().contains(os.toLowerCase()))
-                .map(this::toResponse)
-                .toList();
+    public List<ServerRequestResponse> filterByOs(User owner, String os, boolean isAdmin) {
+        return searchByOs(owner, os, isAdmin);
     }
 
-    public List<ServerRequestResponse> sortBy(User owner, String sortBy) {
+    public List<ServerRequestResponse> sortBy(User owner, String sortBy, boolean isAdmin) {
         Comparator<ServerRequest> comparator = switch (sortBy) {
             case "date" -> Comparator.comparing(ServerRequest::getCreatedAt);
             case "cpu" -> Comparator.comparing(ServerRequest::getCpuCores);
@@ -144,14 +139,19 @@ public class ServerRequestService {
             default -> throw new IllegalArgumentException("Сортировка должна быть date, cpu или ram");
         };
 
-        return requestRepository.findAllByOwner(owner).stream()
+        List<ServerRequest> requests = isAdmin
+                ? requestRepository.findAll()
+                : requestRepository.findAllByOwner(owner);
+        return requests.stream()
                 .sorted(comparator)
                 .map(this::toResponse)
                 .toList();
     }
 
-    public StatisticsResponse getStatistics(User owner) {
-        List<ServerRequest> requests = requestRepository.findAllByOwner(owner);
+    public StatisticsResponse getStatistics(User owner, boolean isAdmin) {
+        List<ServerRequest> requests = isAdmin
+                ? requestRepository.findAll()
+                : requestRepository.findAllByOwner(owner);
         return new StatisticsResponse(
                 requests.size(),
                 countByStatus(requests, ServerRequest.RequestStatus.CREATED),
@@ -162,8 +162,10 @@ public class ServerRequestService {
         );
     }
 
-    public byte[] exportToExcel(User owner) throws IOException {
-        List<ServerRequest> requests = requestRepository.findAllByOwner(owner);
+    public byte[] exportToExcel(User owner, boolean isAdmin) throws IOException {
+        List<ServerRequest> requests = isAdmin
+                ? requestRepository.findAll()
+                : requestRepository.findAllByOwner(owner);
 
         try (XSSFWorkbook workbook = new XSSFWorkbook();
              ByteArrayOutputStream output = new ByteArrayOutputStream()) {
@@ -207,15 +209,10 @@ public class ServerRequestService {
                     request.getDiskGb(),
                     request.getOs()
             );
-            server.allocate(request.getCpuCores(), request.getRamGb(), request.getDiskGb());
-            server.addRequestToHistory(request.getId());
             request.setServer(serverRepository.save(server));
         }
 
         if (newStatus == ServerRequest.RequestStatus.CANCELLED && request.getServer() != null) {
-            Server server = request.getServer();
-            server.release(request.getCpuCores(), request.getRamGb(), request.getDiskGb());
-            serverRepository.save(server);
             request.setServer(null);
         }
 

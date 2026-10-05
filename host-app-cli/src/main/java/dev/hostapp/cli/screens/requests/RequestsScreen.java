@@ -29,10 +29,8 @@ public class RequestsScreen extends BaseScreen {
             System.out.println("5. Удалить");
             if (admin) {
                 System.out.println("6. Обработать заявку / изменить статус");
-                System.out.println("7. Назад");
-            } else {
-                System.out.println("6. Назад");
             }
+            System.out.println("0. Назад");
 
             switch (readLine("Выберите пункт: ")) {
                 case "1" -> showAll();
@@ -42,11 +40,10 @@ public class RequestsScreen extends BaseScreen {
                 case "5" -> delete();
                 case "6" -> {
                     if (admin) updateStatus();
-                    else return;
+                    else printError("неизвестный пункт меню");
                 }
-                case "7" -> {
-                    if (admin) return;
-                    printError("неизвестный пункт меню");
+                case "0" -> {
+                    return;
                 }
                 default -> printError("неизвестный пункт меню");
             }

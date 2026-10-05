@@ -125,7 +125,7 @@ public class ServerRequestController {
             @RequestAttribute("user") User currentUser,
             @RequestParam String os
     ) {
-        return ResponseEntity.ok(requestService.searchByOs(currentUser, os));
+        return ResponseEntity.ok(requestService.searchByOs(currentUser, os, isAdmin(currentUser)));
     }
 
     @GetMapping("/search/cpu")
@@ -133,7 +133,7 @@ public class ServerRequestController {
             @RequestAttribute("user") User currentUser,
             @RequestParam int minCpu
     ) {
-        return ResponseEntity.ok(requestService.searchByMinCpu(currentUser, minCpu));
+        return ResponseEntity.ok(requestService.searchByMinCpu(currentUser, minCpu, isAdmin(currentUser)));
     }
 
     @GetMapping("/filter/status")
@@ -141,7 +141,7 @@ public class ServerRequestController {
             @RequestAttribute("user") User currentUser,
             @RequestParam ServerRequest.RequestStatus status
     ) {
-        return ResponseEntity.ok(requestService.filterByStatus(currentUser, status));
+        return ResponseEntity.ok(requestService.filterByStatus(currentUser, status, isAdmin(currentUser)));
     }
 
     @GetMapping("/filter/os")
@@ -149,7 +149,7 @@ public class ServerRequestController {
             @RequestAttribute("user") User currentUser,
             @RequestParam String os
     ) {
-        return ResponseEntity.ok(requestService.filterByOs(currentUser, os));
+        return ResponseEntity.ok(requestService.filterByOs(currentUser, os, isAdmin(currentUser)));
     }
 
     @GetMapping("/sort")
@@ -157,12 +157,12 @@ public class ServerRequestController {
             @RequestAttribute("user") User currentUser,
             @RequestParam String by
     ) {
-        return ResponseEntity.ok(requestService.sortBy(currentUser, by));
+        return ResponseEntity.ok(requestService.sortBy(currentUser, by, isAdmin(currentUser)));
     }
 
     @GetMapping("/statistics")
     public ResponseEntity<StatisticsResponse> statistics(@RequestAttribute("user") User currentUser) {
-        return ResponseEntity.ok(requestService.getStatistics(currentUser));
+        return ResponseEntity.ok(requestService.getStatistics(currentUser, isAdmin(currentUser)));
     }
 
     @GetMapping("/export")
@@ -170,7 +170,7 @@ public class ServerRequestController {
         return ResponseEntity.ok()
                 .contentType(MediaType.parseMediaType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"))
                 .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=server-requests.xlsx")
-                .body(requestService.exportToExcel(currentUser));
+                .body(requestService.exportToExcel(currentUser, isAdmin(currentUser)));
     }
 
     @GetMapping("/{uuid}/server")
@@ -178,7 +178,7 @@ public class ServerRequestController {
             @RequestAttribute("user") User currentUser,
             @PathVariable UUID uuid
     ) {
-        ServerRequestResponse response = requestService.get(uuid, currentUser, false);
+        ServerRequestResponse response = requestService.get(uuid, currentUser, isAdmin(currentUser));
         if (response.serverId() == null) {
             return ResponseEntity.notFound().build();
         }

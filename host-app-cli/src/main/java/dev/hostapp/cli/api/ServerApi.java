@@ -2,7 +2,6 @@ package dev.hostapp.cli.api;
 
 import dev.hostapp.cli.dto.server.ServerData;
 import dev.hostapp.cli.dto.server.ServerResponse;
-import dev.hostapp.cli.dto.server.ServerStatusData;
 
 import java.io.IOException;
 import java.util.List;
@@ -24,10 +23,6 @@ public class ServerApi extends BaseApi {
 
     public ServerResponse update(UUID id, ServerData server) throws IOException, InterruptedException {
         return client.put("/servers/" + id, server, ServerResponse.class);
-    }
-
-    public ServerResponse updateStatus(UUID id, String status) throws IOException, InterruptedException {
-        return client.patch("/servers/" + id + "/status", new ServerStatusData(status), ServerResponse.class);
     }
 
     public void delete(UUID id) throws IOException, InterruptedException {

@@ -5,7 +5,6 @@ import dev.hostapp.backend.dto.server.UpdateServerRequest;
 import dev.hostapp.backend.exceptions.ForbiddenException;
 import dev.hostapp.backend.exceptions.ResourceNotFoundException;
 import dev.hostapp.backend.model.Server;
-import dev.hostapp.backend.model.ServerRequest;
 import dev.hostapp.backend.model.User;
 import dev.hostapp.backend.repository.ServerRepository;
 import dev.hostapp.backend.repository.ServerRequestRepository;
@@ -32,7 +31,7 @@ public class ServerService {
     @Transactional
     public List<ServerResponse> getAllAccessible(User user, boolean isAdmin) {
         List<Server> servers = isAdmin
-                ? requestRepository.findServersByRequestStatus(ServerRequest.RequestStatus.COMPLETED)
+                ? serverRepository.findAll()
                 : requestRepository.findAssignedServersByOwner(user);
 
         return servers.stream()
@@ -54,7 +53,9 @@ public class ServerService {
         String hostname = normalizeHostname(dto.hostname());
         ensureHostnameAvailable(hostname, serverId);
 
-        server.resizeCapacity(dto.cpuCores(), dto.ramGb(), dto.diskGb());
+        server.setCpuCores(dto.cpuCores());
+        server.setRamGb(dto.ramGb());
+        server.setDiskGb(dto.diskGb());
         server.setHostname(hostname);
         server.setIpv4Addresses(normalizeAddresses(dto.ipv4Addresses()));
         server.setIpv6Addresses(normalizeAddresses(dto.ipv6Addresses()));
@@ -62,18 +63,10 @@ public class ServerService {
     }
 
     @Transactional
-    public ServerResponse updateStatus(UUID serverId, Server.ServerStatus status) {
-        Server server = findServer(serverId);
-        server.setStatus(status);
-        return ServerResponse.from(serverRepository.save(server));
-    }
-
-    @Transactional
     public void delete(UUID serverId) {
         Server server = findServer(serverId);
-        if (requestRepository.existsByServer_Id(serverId)) {
-            throw new IllegalStateException("Нельзя удалить сервер, пока с ним связаны заявки");
-        }
+        requestRepository.deleteAll(requestRepository.findAllByServer(server));
+        requestRepository.flush();
         serverRepository.delete(server);
     }
 
@@ -99,11 +92,10 @@ public class ServerService {
     }
 
     private void ensureHostnameAvailable(String hostname, UUID currentServerId) {
-        serverRepository.findByHostname(hostname)
-                .filter(existing -> !existing.getId().equals(currentServerId))
-                .ifPresent(existing -> {
-                    throw new IllegalArgumentException("Сервер с таким именем уже существует: " + hostname);
-                });
+        Server existing = serverRepository.findByHostname(hostname).orElse(null);
+        if (existing != null && !existing.getId().equals(currentServerId)) {
+            throw new IllegalArgumentException("Сервер с таким именем уже существует: " + hostname);
+        }
     }
 
     private List<String> normalizeAddresses(List<String> addresses) {

@@ -65,11 +65,12 @@ http://localhost:8080/swagger-ui.html
 
 ### Server
 - id
-- requestIdsHistory
 - hostname
-- ipv4Adresses
-- ipv6Adresses
-- status (enum off,on,suspended)
+- ipv4Addresses
+- ipv6Addresses
+- cpuCores
+- ramGb
+- diskGb
 - createdAt
 - updatedAt
 

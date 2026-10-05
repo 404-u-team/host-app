@@ -2,7 +2,6 @@ package dev.hostapp.backend.controller;
 
 import dev.hostapp.backend.dto.server.ServerResponse;
 import dev.hostapp.backend.dto.server.UpdateServerRequest;
-import dev.hostapp.backend.dto.server.UpdateServerStatusRequest;
 import dev.hostapp.backend.exceptions.ForbiddenException;
 import dev.hostapp.backend.model.User;
 import dev.hostapp.backend.service.ServerService;
@@ -10,7 +9,6 @@ import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestAttribute;
@@ -52,16 +50,6 @@ public class ServerController {
     ) {
         requireAdmin(currentUser);
         return ResponseEntity.ok(serverService.update(uuid, dto));
-    }
-
-    @PatchMapping("/{uuid}/status")
-    public ResponseEntity<ServerResponse> updateStatus(
-            @RequestAttribute("user") User currentUser,
-            @PathVariable UUID uuid,
-            @Valid @RequestBody UpdateServerStatusRequest dto
-    ) {
-        requireAdmin(currentUser);
-        return ResponseEntity.ok(serverService.updateStatus(uuid, dto.status()));
     }
 
     @DeleteMapping("/{uuid}")

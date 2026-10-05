@@ -39,7 +39,7 @@ public class MainMenuScreen extends BaseScreen {
             System.out.println("5. Сортировка заявок");
             System.out.println("6. Статистика заявок");
             System.out.println("7. Экспорт XLSX");
-            System.out.println("8. Выход");
+            System.out.println("0. Выход");
 
             switch (readLine("Выберите пункт: ")) {
                 case "1" -> new RequestsScreen(scanner, requestApi, admin).show();
@@ -49,7 +49,7 @@ public class MainMenuScreen extends BaseScreen {
                 case "5" -> new SortScreen(scanner, requestApi).show();
                 case "6" -> new StatisticsScreen(scanner, requestApi).show();
                 case "7" -> new ExportScreen(scanner, requestApi).show();
-                case "8" -> {
+                case "0" -> {
                     return;
                 }
                 default -> printError("неизвестный пункт меню");

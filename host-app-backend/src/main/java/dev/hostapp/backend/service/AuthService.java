@@ -15,7 +15,6 @@ import java.security.SecureRandom;
 import java.time.Instant;
 import java.util.Base64;
 import java.util.HexFormat;
-import java.util.Optional;
 
 import org.springframework.security.crypto.argon2.Argon2PasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -50,24 +49,23 @@ public class AuthService {
         );
     }
 
-    private boolean checkLogin(String email, String password) {
+    private User authenticate(String email, String password) {
         if (email == null || email.isBlank() || password == null || password.isBlank()) {
             throw new IllegalArgumentException("Bad request");
         }
         PasswordEncoder encoder = Argon2PasswordEncoder.defaultsForSpringSecurity_v5_8();
 
         User user;
-
-            try {
-                user = userService.getByEmail(email);
-            } catch (UserNotFoundException exception) {
-                return false;
-            }
+        try {
+            user = userService.getByEmail(email);
+        } catch (UserNotFoundException exception) {
+            throw new UnauthorizedException("Incorrect email or password");
+        }
 
         if (!encoder.matches(password, user.getPasswordHash())) {
-            return false;
+            throw new UnauthorizedException("Incorrect email or password");
         }
-        return true;
+        return user;
     }
 
     private String generateNewToken() {
@@ -93,10 +91,7 @@ public class AuthService {
     }
 
     public String loginUser(String email, String password, String ip, String userAgent) {
-        if (!this.checkLogin(email, password)) {
-            throw new UnauthorizedException("Incorrect email or password");
-        }
-        User user = userService.getByEmail(email);
+        User user = authenticate(email, password);
 
         String token = generateNewToken();
 
@@ -109,16 +104,11 @@ public class AuthService {
     public User getUserByToken(String token) {
         String tokenHash = hashToken(token);
 
-        Optional<Device> device = deviceRepository.findByTokenHash(tokenHash);
-
-        if (!device.isPresent()) {
+        Device device = deviceRepository.findByTokenHash(tokenHash).orElse(null);
+        if (device == null || device.getSessionValidUntil().isBefore(Instant.now())) {
             return null;
         }
 
-        if (device.get().getSessionValidUntil().isBefore(Instant.now())) {
-            return null;
-        }
-
-        return device.get().getUser();
+        return device.getUser();
     }
 }

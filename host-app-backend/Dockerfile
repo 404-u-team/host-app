@@ -1,3 +1,4 @@
+# syntax=docker/dockerfile:1
 FROM maven:3.9-eclipse-temurin-17 AS build
 
 WORKDIR /workspace
@@ -5,7 +6,7 @@ WORKDIR /workspace
 COPY pom.xml ./
 COPY src ./src
 
-RUN mvn -B -DskipTests package
+RUN --mount=type=cache,id=host-app-maven,target=/root/.m2/repository mvn -B package
 
 FROM eclipse-temurin:17-jre
 
