@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<VBox xmlns:fx="http://javafx.com/fxml/1" fx:controller="dev.hostapp.desktop.controller.ServerFormController"
+      fx:id="root" spacing="14" prefWidth="560" styleClass="page">
+    <Label text="Параметры сервера" styleClass="title"/>
+    <GridPane hgap="14" vgap="12">
+        <columnConstraints>
+            <ColumnConstraints minWidth="110"/>
+            <ColumnConstraints hgrow="ALWAYS"/>
+        </columnConstraints>
+        <Label text="Имя сервера" GridPane.rowIndex="0"/>
+        <TextField fx:id="hostnameField" GridPane.columnIndex="1" GridPane.rowIndex="0"/>
+        <Label text="CPU, ядра" GridPane.rowIndex="1"/>
+        <TextField fx:id="cpuField" GridPane.columnIndex="1" GridPane.rowIndex="1"/>
+        <Label text="RAM, ГБ" GridPane.rowIndex="2"/>
+        <TextField fx:id="ramField" GridPane.columnIndex="1" GridPane.rowIndex="2"/>
+        <Label text="Диск, ГБ" GridPane.rowIndex="3"/>
+        <TextField fx:id="diskField" GridPane.columnIndex="1" GridPane.rowIndex="3"/>
+        <Label text="IPv4" GridPane.rowIndex="4"/>
+        <TextField fx:id="ipv4Field" promptText="192.168.1.10, 192.168.1.11" GridPane.columnIndex="1" GridPane.rowIndex="4"/>
+        <Label text="IPv6" GridPane.rowIndex="5"/>
+        <TextField fx:id="ipv6Field" promptText="2001:db8::1" GridPane.columnIndex="1" GridPane.rowIndex="5"/>
+    </GridPane>
+    <Label text="Адреса необязательны. Несколько адресов разделяйте запятыми." wrapText="true" styleClass="hint"/>
+    <HBox alignment="CENTER_RIGHT" spacing="8">
+        <Button text="Отмена" onAction="#cancel" cancelButton="true"/>
+        <Button text="Сохранить" onAction="#save" defaultButton="true" styleClass="primary"/>
+    </HBox>
+</VBox>

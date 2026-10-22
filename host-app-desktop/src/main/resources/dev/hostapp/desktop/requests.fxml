@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<VBox xmlns:fx="http://javafx.com/fxml/1" fx:controller="dev.hostapp.desktop.controller.RequestsController"
+      fx:id="root" spacing="10" styleClass="page">
+    <Label text="Заявки на серверы" styleClass="title"/>
+    <FlowPane hgap="8" vgap="8">
+        <Button text="Создать" onAction="#create" styleClass="primary"/>
+        <Button fx:id="editButton" text="Изменить" onAction="#edit"/>
+        <Button fx:id="deleteButton" text="Удалить" onAction="#delete"/>
+        <Button fx:id="detailsButton" text="Подробнее" onAction="#details"/>
+        <Button fx:id="serverButton" text="Связанный сервер" onAction="#showServer"/>
+        <Button fx:id="statusButton" text="Изменить статус" onAction="#changeStatus"/>
+        <Button text="Обновить" onAction="#refresh"/>
+        <Button text="Экспорт CSV" onAction="#export"/>
+    </FlowPane>
+    <FlowPane hgap="8" vgap="8" alignment="CENTER_LEFT">
+        <TextField fx:id="searchField" promptText="Поиск: ОС, статус, ресурсы" prefWidth="250" onAction="#applyFilters"/>
+        <Label text="Статус:"/>
+        <ComboBox fx:id="statusFilter" prefWidth="140"/>
+        <Label text="ОС:"/>
+        <ComboBox fx:id="osFilter" prefWidth="140"/>
+        <TextField fx:id="minCpuField" promptText="Минимум CPU" prefWidth="130" onAction="#applyFilters"/>
+        <Button text="Применить" onAction="#applyFilters"/>
+        <Button text="Сбросить" onAction="#resetFilters"/>
+    </FlowPane>
+    <Label text="Сортировка — нажмите заголовок столбца. Повторное нажатие меняет порядок." wrapText="true" styleClass="hint"/>
+    <TableView fx:id="table" VBox.vgrow="ALWAYS">
+        <columns>
+            <TableColumn fx:id="osColumn" text="ОС" prefWidth="180"/>
+            <TableColumn fx:id="cpuColumn" text="CPU" prefWidth="75"/>
+            <TableColumn fx:id="ramColumn" text="RAM, ГБ" prefWidth="100"/>
+            <TableColumn fx:id="diskColumn" text="Диск, ГБ" prefWidth="100"/>
+            <TableColumn fx:id="statusColumn" text="Статус" prefWidth="150"/>
+            <TableColumn fx:id="dateColumn" text="Создана" prefWidth="180"/>
+        </columns>
+    </TableView>
+    <Label fx:id="countLabel" text="Загрузка заявок…"/>
+</VBox>

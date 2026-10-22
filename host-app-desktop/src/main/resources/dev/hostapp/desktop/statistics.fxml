@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<VBox xmlns:fx="http://javafx.com/fxml/1" fx:controller="dev.hostapp.desktop.controller.StatisticsController"
+      fx:id="root" spacing="16" styleClass="page">
+    <Label text="Статистика заявок" styleClass="title"/>
+    <Label text="Пользователь видит свои заявки, администратор — заявки всех пользователей." wrapText="true"/>
+    <GridPane hgap="40" vgap="14">
+        <Label text="Всего заявок" GridPane.rowIndex="0"/>
+        <Label fx:id="totalLabel" text="—" GridPane.columnIndex="1" GridPane.rowIndex="0"/>
+        <Label text="Создано" GridPane.rowIndex="1"/>
+        <Label fx:id="createdLabel" text="—" GridPane.columnIndex="1" GridPane.rowIndex="1"/>
+        <Label text="Одобрено" GridPane.rowIndex="2"/>
+        <Label fx:id="approvedLabel" text="—" GridPane.columnIndex="1" GridPane.rowIndex="2"/>
+        <Label text="Выполнено" GridPane.rowIndex="3"/>
+        <Label fx:id="completedLabel" text="—" GridPane.columnIndex="1" GridPane.rowIndex="3"/>
+        <Label text="Отклонено" GridPane.rowIndex="4"/>
+        <Label fx:id="rejectedLabel" text="—" GridPane.columnIndex="1" GridPane.rowIndex="4"/>
+        <Label text="Отменено" GridPane.rowIndex="5"/>
+        <Label fx:id="cancelledLabel" text="—" GridPane.columnIndex="1" GridPane.rowIndex="5"/>
+    </GridPane>
+    <Label text="Статистика учитывает все доступные заявки, независимо от фильтров таблицы. Статус «Одобрена» сейчас не используется." wrapText="true" styleClass="hint"/>
+    <Button text="Обновить статистику" onAction="#refresh"/>
+</VBox>

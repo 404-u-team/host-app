@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<VBox xmlns:fx="http://javafx.com/fxml/1" fx:controller="dev.hostapp.desktop.controller.LoginController"
+      fx:id="root" alignment="CENTER" spacing="14" styleClass="page">
+    <Label text="Host App" styleClass="title"/>
+    <Label text="Вход в систему"/>
+    <VBox spacing="6" maxWidth="320">
+        <Label text="Email или ADMIN"/>
+        <TextField fx:id="emailField" promptText="Email или ADMIN" onAction="#login"/>
+        <Label text="Пароль"/>
+        <PasswordField fx:id="passwordField" onAction="#login"/>
+        <Button text="Войти" onAction="#login" defaultButton="true" maxWidth="Infinity" styleClass="primary"/>
+        <Button text="Создать аккаунт" onAction="#register" maxWidth="Infinity"/>
+    </VBox>
+</VBox>

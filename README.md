@@ -43,6 +43,17 @@ mvn clean package
 mvn exec:java
 ```
 
+## Настольный клиент JavaFX
+
+После запуска backend и PostgreSQL в отдельном терминале из корня проекта:
+
+```sh
+cd host-app-desktop
+mvn javafx:run
+```
+
+Клиент использует тот же backend, что и CLI. Подробности запуска, функции и отличие от требования JDBC в КР2 описаны в [host-app-desktop/README.md](host-app-desktop/README.md).
+
 ## Сборка backend
 
 Из каталога `host-app-backend`:

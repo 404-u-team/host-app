@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<BorderPane xmlns:fx="http://javafx.com/fxml/1" fx:controller="dev.hostapp.desktop.controller.MainController" fx:id="root">
+    <top>
+        <HBox spacing="16" alignment="CENTER_LEFT" styleClass="header">
+            <Label text="Host App" styleClass="title"/>
+            <Label fx:id="userLabel"/>
+            <Region HBox.hgrow="ALWAYS"/>
+            <Button text="Выйти из аккаунта" onAction="#logout"/>
+        </HBox>
+    </top>
+    <center>
+        <TabPane fx:id="tabs" tabClosingPolicy="UNAVAILABLE">
+            <tabs>
+                <Tab fx:id="requestsTab" text="Заявки">
+                    <content><fx:include fx:id="requests" source="requests.fxml"/></content>
+                </Tab>
+                <Tab fx:id="serversTab" text="Серверы">
+                    <content><fx:include fx:id="servers" source="servers.fxml"/></content>
+                </Tab>
+                <Tab text="Статистика">
+                    <content><fx:include fx:id="statistics" source="statistics.fxml"/></content>
+                </Tab>
+            </tabs>
+        </TabPane>
+    </center>
+</BorderPane>

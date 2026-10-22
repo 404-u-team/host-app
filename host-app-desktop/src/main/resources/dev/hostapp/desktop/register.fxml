@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<VBox xmlns:fx="http://javafx.com/fxml/1" fx:controller="dev.hostapp.desktop.controller.RegisterController"
+      fx:id="root" alignment="CENTER" spacing="12" styleClass="page">
+    <Label text="Регистрация" styleClass="title"/>
+    <VBox spacing="6" maxWidth="320">
+        <Label text="Имя"/>
+        <TextField fx:id="nameField"/>
+        <Label text="Фамилия"/>
+        <TextField fx:id="surnameField"/>
+        <Label text="Email или ADMIN"/>
+        <TextField fx:id="emailField"/>
+        <Label text="Пароль"/>
+        <PasswordField fx:id="passwordField" onAction="#register"/>
+        <Button text="Зарегистрироваться" onAction="#register" defaultButton="true" maxWidth="Infinity" styleClass="primary"/>
+        <Button text="Назад ко входу" onAction="#back" maxWidth="Infinity"/>
+    </VBox>
+</VBox>
