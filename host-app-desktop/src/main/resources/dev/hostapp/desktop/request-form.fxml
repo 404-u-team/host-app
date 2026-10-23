@@ -16,9 +16,8 @@
         <Label text="Диск, ГБ" GridPane.rowIndex="2"/>
         <TextField fx:id="diskField" GridPane.columnIndex="1" GridPane.rowIndex="2"/>
         <Label text="ОС" GridPane.rowIndex="3"/>
-        <TextField fx:id="osField" promptText="Например, Ubuntu 24.04" GridPane.columnIndex="1" GridPane.rowIndex="3"/>
+        <TextField fx:id="osField" promptText="Ubuntu 24.04" GridPane.columnIndex="1" GridPane.rowIndex="3"/>
     </GridPane>
-    <Label text="CPU, RAM и диск должны быть целыми положительными числами." wrapText="true" styleClass="hint"/>
     <HBox alignment="CENTER_RIGHT" spacing="8">
         <Button text="Отмена" onAction="#cancel" cancelButton="true"/>
         <Button text="Сохранить" onAction="#save" defaultButton="true" styleClass="primary"/>

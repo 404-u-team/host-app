@@ -7,7 +7,7 @@
             <Label text="Host App" styleClass="title"/>
             <Label fx:id="userLabel"/>
             <Region HBox.hgrow="ALWAYS"/>
-            <Button text="Выйти из аккаунта" onAction="#logout"/>
+            <Button text="Выйти" onAction="#logout"/>
         </HBox>
     </top>
     <center>

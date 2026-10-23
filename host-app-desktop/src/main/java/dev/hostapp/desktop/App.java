@@ -109,15 +109,15 @@ public class App extends Application {
             }
             Dialogs.error(stage, apiError.getMessage());
         } else if (error instanceof ConnectException || error instanceof HttpTimeoutException) {
-            Dialogs.error(stage, "Нет соединения с backend. Проверьте его запуск и адрес подключения.");
+            Dialogs.error(stage, "Нет соединения с сервером.");
         } else if (error instanceof IOException) {
-            Dialogs.error(stage, "Не удалось прочитать или сохранить данные. Проверьте соединение и доступ к файлу.");
+            Dialogs.error(stage, "Ошибка чтения или записи данных.");
         } else if (error instanceof IllegalArgumentException || error instanceof IllegalStateException) {
             Dialogs.error(stage, error.getMessage());
         } else if (error instanceof InterruptedException) {
-            Dialogs.error(stage, "Операция была прервана. Повторите её.");
+            Dialogs.error(stage, "Операция прервана.");
         } else {
-            Dialogs.error(stage, "Не удалось выполнить операцию. Обновите данные и повторите попытку.");
+            Dialogs.error(stage, "Не удалось выполнить операцию. Повторите попытку.");
         }
     }
 

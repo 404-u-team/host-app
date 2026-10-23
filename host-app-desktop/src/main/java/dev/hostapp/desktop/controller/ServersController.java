@@ -43,7 +43,7 @@ public class ServersController extends BaseController {
         dateColumn.setCellValueFactory(cell -> new ReadOnlyObjectWrapper<>(cell.getValue().createdAt()));
         TableColumns.date(dateColumn);
         table.setItems(FXCollections.observableArrayList());
-        table.setPlaceholder(new Label("Серверов нет. Сервер появляется после выполнения заявки администратором."));
+        table.setPlaceholder(new Label("Серверов нет"));
         table.getSelectionModel().selectedItemProperty().addListener((observable, previous, selected) -> updateButtons());
     }
 
@@ -100,7 +100,7 @@ public class ServersController extends BaseController {
     private void delete() {
         ServerResponse selected = table.getSelectionModel().getSelectedItem();
         if (selected != null && app.isAdmin() && Dialogs.confirm(app.getStage(), "Удалить сервер «"
-                + selected.hostname() + "»? Все связанные заявки тоже будут удалены.")) {
+                + selected.hostname() + "»? Связанные заявки также удалятся.")) {
             runTask(() -> {
                 app.getServerService().delete(selected);
                 return null;

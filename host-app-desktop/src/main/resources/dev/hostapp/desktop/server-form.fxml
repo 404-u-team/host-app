@@ -22,7 +22,7 @@
         <Label text="IPv6" GridPane.rowIndex="5"/>
         <TextField fx:id="ipv6Field" promptText="2001:db8::1" GridPane.columnIndex="1" GridPane.rowIndex="5"/>
     </GridPane>
-    <Label text="Адреса необязательны. Несколько адресов разделяйте запятыми." wrapText="true" styleClass="hint"/>
+    <Label text="IP-адреса через запятую. Можно оставить пустыми." wrapText="true" styleClass="hint"/>
     <HBox alignment="CENTER_RIGHT" spacing="8">
         <Button text="Отмена" onAction="#cancel" cancelButton="true"/>
         <Button text="Сохранить" onAction="#save" defaultButton="true" styleClass="primary"/>

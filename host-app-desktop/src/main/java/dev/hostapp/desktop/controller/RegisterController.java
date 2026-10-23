@@ -24,7 +24,7 @@ public class RegisterController extends BaseController {
         }, result -> {
             passwordField.clear();
             app.showLogin();
-            Dialogs.info(app.getStage(), "Регистрация", "Аккаунт создан. Теперь войдите в систему.");
+            Dialogs.info(app.getStage(), "Регистрация", "Аккаунт создан. Войдите в систему.");
         });
     }
 

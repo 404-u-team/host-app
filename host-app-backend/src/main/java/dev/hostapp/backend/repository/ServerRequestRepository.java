@@ -56,7 +56,7 @@ public interface ServerRequestRepository extends JpaRepository<ServerRequest, UU
 
     List<ServerRequest> findAllByCpuCoresGreaterThanEqual(Integer minCpuCores);
 
-    // === Фильтры по диапазонам (включительные: min..max, если min==max — точное совпадение) ===
+    // === Фильтры по диапазонам (включительные: min..max, если min==max: точное совпадение) ===
     List<ServerRequest> findAllByCpuCoresBetween(Integer minCpuCores, Integer maxCpuCores);
 
     List<ServerRequest> findAllByRamGbBetween(Integer minRamGb, Integer maxRamGb);

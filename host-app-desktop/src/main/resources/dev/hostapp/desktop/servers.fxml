@@ -4,7 +4,6 @@
 <VBox xmlns:fx="http://javafx.com/fxml/1" fx:controller="dev.hostapp.desktop.controller.ServersController"
       fx:id="root" spacing="10" styleClass="page">
     <Label text="Серверы" styleClass="title"/>
-    <Label text="Сервер создаётся при выполнении заявки администратором." wrapText="true" styleClass="hint"/>
     <FlowPane hgap="8" vgap="8">
         <Button fx:id="detailsButton" text="Подробнее" onAction="#details"/>
         <Button fx:id="editButton" text="Изменить" onAction="#edit"/>

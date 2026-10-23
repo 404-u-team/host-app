@@ -97,14 +97,14 @@ public class ApiClient {
 
     private String errorMessage(int statusCode, String body) {
         String fallback = switch (statusCode) {
-            case 401 -> "Неверные данные входа или сессия истекла. Войдите снова.";
-            case 403 -> "Недостаточно прав для этой операции.";
-            case 404 -> "Запись не найдена. Обновите список.";
+            case 401 -> "Войдите в систему.";
+            case 403 -> "Недостаточно прав.";
+            case 404 -> "Запись не найдена.";
             case 409 -> "Данные уже существуют или операция недоступна.";
-            default -> "Не удалось выполнить запрос. Код HTTP: " + statusCode;
+            default -> "Ошибка запроса. HTTP " + statusCode;
         };
         if (statusCode >= 500) {
-            return "Ошибка backend. Попробуйте ещё раз позже.";
+            return "Ошибка сервера. Попробуйте позже.";
         }
         try {
             JsonNode json = mapper.readTree(body);
@@ -114,7 +114,7 @@ public class ApiClient {
                     return "Неверный логин или пароль.";
                 }
                 if (message.equals("User already exists")) {
-                    return "Аккаунт с таким логином уже существует.";
+                    return "Логин уже занят.";
                 }
                 if (!message.isBlank()) {
                     return message;

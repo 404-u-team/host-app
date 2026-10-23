@@ -54,7 +54,7 @@ public class ServerService {
             boolean valid = ipv6 ? validIpv6(address) : validIpv4(address);
             if (!valid) {
                 throw new IllegalArgumentException("Неверный IPv" + (ipv6 ? "6" : "4") + ": " + address
-                        + ". Разделяйте адреса запятыми.");
+                        + ". Укажите адреса через запятую.");
             }
             if (!result.contains(address)) {
                 result.add(address);

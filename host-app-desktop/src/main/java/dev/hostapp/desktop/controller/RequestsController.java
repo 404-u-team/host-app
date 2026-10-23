@@ -150,7 +150,7 @@ public class RequestsController extends BaseController {
     @FXML
     private void delete() {
         ServerRequestResponse selected = table.getSelectionModel().getSelectedItem();
-        if (selected != null && Dialogs.confirm(app.getStage(), "Удалить выбранную заявку на " + selected.os() + "?")) {
+        if (selected != null && Dialogs.confirm(app.getStage(), "Удалить заявку на " + selected.os() + "?")) {
             runTask(() -> {
                 app.getRequestService().delete(selected);
                 return null;
@@ -168,7 +168,7 @@ public class RequestsController extends BaseController {
                     + "\nСоздана: " + Display.date(selected.createdAt())
                     + "\nОбновлена: " + Display.date(selected.updatedAt())
                     + "\nID: " + selected.id() + "\nВладелец: " + selected.ownerId()
-                    + "\nСвязанный сервер: " + (selected.serverId() == null ? "ещё не создан" : selected.serverId()));
+                    + "\nСервер: " + (selected.serverId() == null ? "нет" : selected.serverId()));
         }
     }
 
@@ -190,15 +190,20 @@ public class RequestsController extends BaseController {
         if (statuses.isEmpty()) {
             return;
         }
-        ChoiceDialog<String> dialog = new ChoiceDialog<>(statuses.get(0), statuses);
+        List<String> labels = new ArrayList<>();
+        for (String status : statuses) {
+            labels.add(Display.status(status));
+        }
+        ChoiceDialog<String> dialog = new ChoiceDialog<>(labels.get(0), labels);
         dialog.initOwner(app.getStage());
         dialog.setTitle("Статус заявки");
-        dialog.setHeaderText("COMPLETED — выполнить, REJECTED — отклонить, CANCELLED — отменить");
+        dialog.setHeaderText(null);
         dialog.setContentText("Новый статус:");
-        dialog.showAndWait().ifPresent(status -> {
+        dialog.showAndWait().ifPresent(label -> {
+            String status = statuses.get(labels.indexOf(label));
             String message = "Изменить статус на «" + Display.status(status) + "»?";
             if (status.equals("COMPLETED")) {
-                message += " Будет создан сервер с параметрами заявки.";
+                message += " Будет создан сервер.";
             }
             if (Dialogs.confirm(app.getStage(), message)) {
                 runTask(() -> {
@@ -212,7 +217,7 @@ public class RequestsController extends BaseController {
     @FXML
     private void export() {
         FileChooser chooser = new FileChooser();
-        chooser.setTitle("Экспорт текущей таблицы заявок");
+        chooser.setTitle("Сохранить CSV");
         chooser.setInitialFileName("requests.csv");
         chooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("CSV", "*.csv"));
         File file = chooser.showSaveDialog(app.getStage());

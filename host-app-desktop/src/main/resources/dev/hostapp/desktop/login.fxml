@@ -4,7 +4,7 @@
 <VBox xmlns:fx="http://javafx.com/fxml/1" fx:controller="dev.hostapp.desktop.controller.LoginController"
       fx:id="root" alignment="CENTER" spacing="14" styleClass="page">
     <Label text="Host App" styleClass="title"/>
-    <Label text="Вход в систему"/>
+    <Label text="Вход"/>
     <VBox spacing="6" maxWidth="320">
         <Label text="Email или ADMIN"/>
         <TextField fx:id="emailField" promptText="Email или ADMIN" onAction="#login"/>

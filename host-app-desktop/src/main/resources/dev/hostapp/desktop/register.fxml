@@ -14,6 +14,6 @@
         <Label text="Пароль"/>
         <PasswordField fx:id="passwordField" onAction="#register"/>
         <Button text="Зарегистрироваться" onAction="#register" defaultButton="true" maxWidth="Infinity" styleClass="primary"/>
-        <Button text="Назад ко входу" onAction="#back" maxWidth="Infinity"/>
+        <Button text="Назад" onAction="#back" maxWidth="Infinity"/>
     </VBox>
 </VBox>
