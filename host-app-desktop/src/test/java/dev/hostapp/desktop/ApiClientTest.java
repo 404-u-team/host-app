@@ -66,6 +66,29 @@ class ApiClientTest {
     }
 
     @Test
+    void registrationAndEmailCodeFollowServerVerificationRequirement() throws Exception {
+        AtomicReference<String> body = new AtomicReference<>();
+        server.createContext("/auth/register", exchange -> reply(exchange, 201,
+                "{\"id\":\"" + id + "\",\"name\":\"Name\",\"surname\":\"Surname\","
+                        + "\"email\":\"user@example.org\",\"verificationRequired\":true}"));
+        server.createContext("/auth/verify-email", exchange -> {
+            body.set(new String(exchange.getRequestBody().readAllBytes(), StandardCharsets.UTF_8));
+            reply(exchange, 200, "{\"id\":\"" + id + "\",\"email\":\"user@example.org\",\"verificationRequired\":false}");
+        });
+        server.createContext("/auth/resend-email-code", exchange -> {
+            body.set(new String(exchange.getRequestBody().readAllBytes(), StandardCharsets.UTF_8));
+            reply(exchange, 200, "{\"id\":\"" + id + "\",\"email\":\"user@example.org\",\"verificationRequired\":true}");
+        });
+        AuthApi api = new AuthApi(client);
+        assertTrue(api.register("Name", "Surname", "user@example.org", "password").verificationRequired());
+        assertFalse(api.verifyEmail("user@example.org", "012345").verificationRequired());
+        assertEquals("012345", mapper.readTree(body.get()).get("code").asText());
+        assertFalse(mapper.readTree(body.get()).has("password"));
+        assertTrue(api.resendEmailCode("user@example.org", "password").verificationRequired());
+        assertEquals("password", mapper.readTree(body.get()).get("password").asText());
+    }
+
+    @Test
     void sendsRequestCrudAndStatusUsingExistingApiContract() throws Exception {
         AtomicReference<String> method = new AtomicReference<>();
         AtomicReference<String> path = new AtomicReference<>();

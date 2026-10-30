@@ -7,6 +7,7 @@ import dev.hostapp.backend.model.Device;
 import dev.hostapp.backend.model.User;
 import dev.hostapp.backend.repository.DeviceRepository;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
@@ -24,29 +25,52 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 public class AuthService {
     private final UserService userService;
     private final DeviceRepository deviceRepository;
+    private final EmailService emailService;
+    private final EmailVerificationService verification;
     private static final SecureRandom SECURE_RANDOM = new SecureRandom();
 
-    public AuthService(UserService userService, DeviceRepository deviceRepository) {
+    public AuthService(UserService userService, DeviceRepository deviceRepository,
+                       EmailService emailService, EmailVerificationService verification) {
+        this.emailService = emailService;
+        this.verification = verification;
         this.userService = userService;
         this.deviceRepository = deviceRepository;
     }
 
+    @Transactional
     public User registerUser(String name, String surname, String email, String password) {
         if (name == null || name.isBlank() || surname == null || surname.isBlank()
                 || email == null || email.isBlank() || password == null || password.isBlank()) {
             throw new IllegalArgumentException("Bad request");
         }
+        email = email.trim();
+        if (!EmailService.isEmailAddress(email)) {
+            throw new IllegalArgumentException("Неверный email");
+        }
+        if (name.trim().length() > 255 || surname.trim().length() > 255 || password.length() > 255) {
+            throw new IllegalArgumentException("Поля регистрации: не более 255 символов");
+        }
         if (userService.emailExists(email)) {
+            User existing = userService.getByEmail(email);
+            if (!existing.isEmailVerified()
+                    && Argon2PasswordEncoder.defaultsForSpringSecurity_v5_8().matches(password, existing.getPasswordHash())) {
+                return existing; // Resume verification without replacing credentials or bypassing resend limits.
+            }
             throw new UserAlreadyExistsException("User already exists");
         }
         PasswordEncoder encoder = Argon2PasswordEncoder.defaultsForSpringSecurity_v5_8();
 
-        return userService.createUser(
-            name,
-            surname,
+        User user = userService.createUser(
+            name.trim(),
+            surname.trim(),
             email,
             encoder.encode(password)
         );
+        if (emailService.isVerificationRequired()) {
+            user.requireEmailVerification();
+            verification.sendCode(user);
+        }
+        return user;
     }
 
     private User authenticate(String email, String password) {
@@ -64,6 +88,9 @@ public class AuthService {
 
         if (!encoder.matches(password, user.getPasswordHash())) {
             throw new UnauthorizedException("Incorrect email or password");
+        }
+        if (!user.isEmailVerified()) {
+            throw new UnauthorizedException("Подтвердите email. Откройте регистрацию с теми же email и паролем для ввода или повторной отправки кода.");
         }
         return user;
     }
@@ -91,7 +118,7 @@ public class AuthService {
     }
 
     public String loginUser(String email, String password, String ip, String userAgent) {
-        User user = authenticate(email, password);
+        User user = authenticate(email == null ? null : email.trim(), password);
 
         String token = generateNewToken();
 
@@ -109,6 +136,6 @@ public class AuthService {
             return null;
         }
 
-        return device.getUser();
+        return device.getUser().isEmailVerified() ? device.getUser() : null;
     }
 }

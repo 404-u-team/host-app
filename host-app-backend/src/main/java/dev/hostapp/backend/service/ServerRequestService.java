@@ -18,6 +18,7 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.context.ApplicationEventPublisher;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -30,13 +31,16 @@ public class ServerRequestService {
 
     private final ServerRequestRepository requestRepository;
     private final ServerRepository serverRepository;
+    private final ApplicationEventPublisher events;
 
     public ServerRequestService(
             ServerRequestRepository requestRepository,
-            ServerRepository serverRepository
+            ServerRepository serverRepository,
+            ApplicationEventPublisher events
     ) {
         this.requestRepository = requestRepository;
         this.serverRepository = serverRepository;
+        this.events = events;
     }
 
     @Transactional
@@ -216,8 +220,12 @@ public class ServerRequestService {
             request.setServer(null);
         }
 
+        ServerRequest.RequestStatus oldStatus = request.getStatus();
         request.setStatus(newStatus);
-        return toResponse(requestRepository.save(request));
+        ServerRequestResponse response = toResponse(requestRepository.save(request));
+        events.publishEvent(new RequestStatusChanged(request.getId(), request.getOwner().getEmail(),
+                request.getOwner().isEmailVerified(), oldStatus, newStatus));
+        return response;
     }
 
     private ServerRequest findRequestForUpdate(UUID requestId) {

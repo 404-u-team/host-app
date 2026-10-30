@@ -23,8 +23,9 @@ PostgreSQL подключён только к отдельной внутрен�
 | --- | --- |
 | Server | Сервер, на котором работают Nginx Proxy Manager и сеть `intranet` |
 | Repo / Branch | Репозиторий приложения и ветка с файлами стенда |
-| Run directory | `host-app-backend` |
-| File paths | Только `compose.staging.yaml` |
+| Run directory | `.` (корень репозитория) |
+| File paths | Только `host-app-backend/compose.staging.yaml` |
+| Env file path | `.env` |
 | Project name | `hostapp-staging` |
 | Extra args | `--build` |
 
@@ -32,7 +33,43 @@ PostgreSQL подключён только к отдельной внутрен�
 задайте `POSTGRES_PASSWORD`. Реальные пароли храните в настройках стенда,
 не в репозитории. Нажмите Deploy.
 
-SMTP необязателен; параметры работают так же, как описано в основном README.
+Пути File paths и Env file path отсчитываются от Run directory. Если в логе
+`Missing files: compose.staging.yaml`, проверьте эту пару настроек: файл лежит
+в подкаталоге `host-app-backend`, а не в корне репозитория.
+
+### SMTP через Stalwart
+
+Для почтового аккаунта стенда добавьте в Environment, заменив примеры
+SMTP-хоста, логина и отправителя своими значениями:
+
+```dotenv
+EMAIL_VERIFICATION_ENABLED=true
+EMAIL_NOTIFICATIONS_ENABLED=true
+SMTP_HOST=mail.example.com
+SMTP_PORT=465
+SMTP_USERNAME=hostapp@example.com
+SMTP_FROM=hostapp@example.com
+SMTP_AUTH=true
+SMTP_SSL_ENABLED=true
+SMTP_TLS_ENABLED=false
+```
+
+Отдельно задайте `SMTP_PASSWORD` через секреты Komodo или Environment.
+Не используйте `*` как пароль: это обозначение скрытого значения.
+В приложении используются `SMTP_USERNAME` и `SMTP_SSL_ENABLED`, а не
+`SMTP_USER` и `SMTP_SECURE` из подсказки почтового сервера.
+Порт 465 использует неявный SSL, поэтому STARTTLS (`SMTP_TLS_ENABLED`) отключён.
+Проверка сертификата и имени SMTP-сервера включена. Адрес
+SMTP-сервера должен разрешаться и быть доступен из контейнера backend.
+
+Настроенный SMTP автоматически включает подтверждение email при регистрации.
+Используйте обновлённый Desktop или CLI из той же ветки `javafx`: они показывают
+ввод кода из письма. При изменении статуса заявки отправляется уведомление владельцу.
+Для проверки зарегистрируйте новый аккаунт с доступным вам email и введите код.
+
+Без SMTP оставьте его параметры пустыми и задайте `EMAIL_VERIFICATION_ENABLED=false`.
+Полное описание почтовых параметров есть в основном README.
+
 Пароль и имя пользователя PostgreSQL применяются при первом создании базы:
 смена переменных не изменяет учётные данные в уже существующем volume.
 

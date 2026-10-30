@@ -1,0 +1,10 @@
+CREATE TABLE users (
+    id UUID PRIMARY KEY,
+    name VARCHAR(255) NOT NULL,
+    surname VARCHAR(255) NOT NULL,
+    email VARCHAR(255) NOT NULL UNIQUE,
+    password_hash VARCHAR(255) NOT NULL,
+    created_at TIMESTAMP WITH TIME ZONE NOT NULL,
+    updated_at TIMESTAMP WITH TIME ZONE NOT NULL
+);
+INSERT INTO users VALUES ('7da031fe-159d-4ea8-a9ec-49ed3c531e27', 'Admin', 'Legacy', 'ADMIN', 'placeholder', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);

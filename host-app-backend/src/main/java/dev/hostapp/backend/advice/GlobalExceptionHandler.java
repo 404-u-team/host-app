@@ -1,6 +1,7 @@
 package dev.hostapp.backend.advice;
 
 import dev.hostapp.backend.dto.error.CodeErrorResponse;
+import dev.hostapp.backend.exceptions.EmailDeliveryException;
 import dev.hostapp.backend.dto.error.ErrorResponse;
 import dev.hostapp.backend.dto.error.ValidationErrorResponse;
 import dev.hostapp.backend.exceptions.ForbiddenException;
@@ -20,6 +21,12 @@ import java.util.Map;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
+
+    @ExceptionHandler(EmailDeliveryException.class)
+    public ResponseEntity<CodeErrorResponse> handleEmailDelivery(EmailDeliveryException ex) {
+        return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE)
+                .body(new CodeErrorResponse("EMAIL_DELIVERY_FAILED", ex.getMessage()));
+    }
 
     @ExceptionHandler(IllegalArgumentException.class)
     public ResponseEntity<ErrorResponse> handleBadRequest(IllegalArgumentException ex) {

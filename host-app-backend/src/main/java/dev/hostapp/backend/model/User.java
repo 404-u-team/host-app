@@ -32,6 +32,16 @@ public class User {
     @Column(name = "password_hash", nullable = false)
     private String passwordHash;
 
+    // Database default preserves access for accounts created before email verification.
+    @Column(nullable = false, columnDefinition = "boolean default true")
+    private boolean emailVerified = true;
+
+    private String emailCodeHash;
+    private Instant emailCodeExpiresAt;
+    private Instant emailCodeSentAt;
+    @Column(nullable = false, columnDefinition = "integer default 0")
+    private int emailCodeAttempts;
+
     @Column(name = "created_at", nullable = false, updatable = false)
     private Instant createdAt;
 
@@ -77,6 +87,35 @@ public class User {
 
     public String getPasswordHash() {
         return passwordHash;
+    }
+
+    public boolean isEmailVerified() {
+        return emailVerified;
+    }
+
+    public void requireEmailVerification() {
+        emailVerified = false;
+    }
+
+    public void issueEmailCode(String hash, Instant now) {
+        emailCodeHash = hash;
+        emailCodeSentAt = now;
+        emailCodeExpiresAt = now.plusSeconds(600);
+        emailCodeAttempts = 0;
+    }
+
+    public String getEmailCodeHash() { return emailCodeHash; }
+    public Instant getEmailCodeExpiresAt() { return emailCodeExpiresAt; }
+    public Instant getEmailCodeSentAt() { return emailCodeSentAt; }
+    public int getEmailCodeAttempts() { return emailCodeAttempts; }
+    public void recordEmailCodeAttempt() { emailCodeAttempts++; }
+
+    public void verifyEmail() {
+        emailVerified = true;
+        emailCodeHash = null;
+        emailCodeExpiresAt = null;
+        emailCodeSentAt = null;
+        emailCodeAttempts = 0;
     }
 
     public Instant getCreatedAt() {

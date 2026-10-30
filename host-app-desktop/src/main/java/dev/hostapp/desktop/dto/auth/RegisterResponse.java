@@ -6,6 +6,7 @@ public record RegisterResponse(
     UUID id,
     String name,
     String surname,
-    String email
+    String email,
+    boolean verificationRequired
 ) {
 }

@@ -22,6 +22,8 @@ public class AppConfig implements WebMvcConfigurer {
             .addPathPatterns("/**")
             .excludePathPatterns(
                 "/auth/register",
+                "/auth/verify-email",
+                "/auth/resend-email-code",
                 "/auth/login",
                 "/health",
                 "/swagger-ui.html",

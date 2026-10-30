@@ -4,16 +4,23 @@
 <VBox xmlns:fx="http://javafx.com/fxml/1" fx:controller="dev.hostapp.desktop.controller.RegisterController"
       fx:id="root" alignment="CENTER" spacing="12" styleClass="page">
     <Label text="Регистрация" styleClass="title"/>
-    <VBox spacing="6" maxWidth="320">
+    <VBox fx:id="registrationFields" spacing="6" maxWidth="320">
         <Label text="Имя"/>
         <TextField fx:id="nameField"/>
         <Label text="Фамилия"/>
         <TextField fx:id="surnameField"/>
-        <Label text="Email или ADMIN"/>
+        <Label text="Email"/>
         <TextField fx:id="emailField"/>
         <Label text="Пароль"/>
         <PasswordField fx:id="passwordField" onAction="#register"/>
         <Button text="Зарегистрироваться" onAction="#register" defaultButton="true" maxWidth="Infinity" styleClass="primary"/>
-        <Button text="Назад" onAction="#back" maxWidth="Infinity"/>
     </VBox>
+    <VBox fx:id="verificationFields" visible="false" managed="false" spacing="6" maxWidth="320">
+        <Label text="Код подтверждения из письма (6 цифр)"/>
+        <TextField fx:id="codeField" onAction="#verifyEmail" promptText="000000"/>
+        <Button text="Подтвердить email" onAction="#verifyEmail" maxWidth="Infinity" styleClass="primary"/>
+        <Button text="Отправить код повторно" onAction="#resendCode" maxWidth="Infinity"/>
+        <Label text="Повторная отправка доступна через 60 секунд." wrapText="true"/>
+    </VBox>
+    <Button text="Назад" onAction="#back" maxWidth="320"/>
 </VBox>
