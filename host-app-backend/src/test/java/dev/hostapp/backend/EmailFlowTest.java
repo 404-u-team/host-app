@@ -38,7 +38,8 @@ import static org.mockito.Mockito.*;
         "spring.mail.username=test",
         "spring.mail.password=test",
         "app.email.from=host@example.org",
-        "app.email.verification-enabled=false"
+        "app.email.verification-enabled=false",
+        "app.admin.bootstrap-password="
 })
 class EmailFlowTest {
     @Autowired org.springframework.core.env.Environment env;
@@ -77,6 +78,17 @@ class EmailFlowTest {
                 .POST(java.net.http.HttpRequest.BodyPublishers.ofString(body)).build();
         return java.net.http.HttpClient.newHttpClient().send(request,
                 java.net.http.HttpResponse.BodyHandlers.ofString());
+    }
+
+    @Test
+    void publicRegistrationCannotCreateAnAdministrator() throws Exception {
+        for (String login : new String[] {"ADMIN", "admin", " ADMIN "}) {
+            var response = post("/auth/register", "{\"name\":\"Admin\",\"surname\":\"User\","
+                    + "\"email\":\"" + login + "\",\"password\":\"password\"}");
+            assertEquals(400, response.statusCode());
+        }
+        assertFalse(users.existsByEmailIgnoreCase("ADMIN"));
+        verifyNoInteractions(sender);
     }
 
     @Test

@@ -19,7 +19,8 @@ import static org.junit.jupiter.api.Assertions.*;
         "spring.sql.init.mode=always",
         "spring.sql.init.schema-locations=classpath:legacy-users.sql",
         "spring.mail.host=", "spring.mail.username=", "spring.mail.password=", "app.email.from=",
-        "app.email.verification-enabled=false"
+        "app.email.verification-enabled=false",
+        "app.admin.bootstrap-password="
 })
 class EmailDisabledTest {
     @Autowired AuthService auth;
