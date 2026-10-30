@@ -32,15 +32,18 @@ public class ServerRequestService {
     private final ServerRequestRepository requestRepository;
     private final ServerRepository serverRepository;
     private final ApplicationEventPublisher events;
+    private final ServerService serverService;
 
     public ServerRequestService(
             ServerRequestRepository requestRepository,
             ServerRepository serverRepository,
-            ApplicationEventPublisher events
+            ApplicationEventPublisher events,
+            ServerService serverService
     ) {
         this.requestRepository = requestRepository;
         this.serverRepository = serverRepository;
         this.events = events;
+        this.serverService = serverService;
     }
 
     @Transactional
@@ -59,11 +62,44 @@ public class ServerRequestService {
     }
 
     @Transactional
+    public ServerRequestResponse requestChange(User owner, UUID serverId, CreateServerRequest dto) {
+        Server server = findOwnedServer(serverId, owner);
+        validateResources(dto.cpuCores(), dto.ramGb(), dto.diskGb(), dto.os());
+        ServerRequest request = new ServerRequest(owner, dto.cpuCores(), dto.ramGb(), dto.diskGb(), dto.os().trim());
+        request.setType(ServerRequest.RequestType.CHANGE);
+        request.setServer(server);
+        return toResponse(requestRepository.save(request));
+    }
+
+    @Transactional
+    public ServerRequestResponse requestCancellation(User owner, UUID serverId) {
+        Server server = findOwnedServer(serverId, owner);
+        ServerRequest request = new ServerRequest(owner, server.getCpuCores(), server.getRamGb(),
+                server.getDiskGb(), server.getOs());
+        request.setType(ServerRequest.RequestType.CANCEL);
+        request.setServer(server);
+        return toResponse(requestRepository.save(request));
+    }
+
+    private Server findOwnedServer(UUID serverId, User owner) {
+        Server server = serverRepository.findById(serverId)
+                .orElseThrow(() -> new ResourceNotFoundException("Сервер не найден: " + serverId));
+        if (owner == null || !requestRepository.existsByOwner_IdAndServer_Id(owner.getId(), serverId)) {
+            throw new ForbiddenException("Нет доступа к серверу: " + serverId);
+        }
+        return server;
+    }
+
+    @Transactional
     public ServerRequestResponse update(UUID requestId, User currentUser, UpdateServerRequest dto, boolean isAdmin) {
         ServerRequest request = findRequestForUpdate(requestId);
         checkAccess(request, currentUser, isAdmin);
         if (request.getStatus() != ServerRequest.RequestStatus.CREATED) {
             throw new IllegalStateException("Изменить можно только заявку со статусом CREATED");
+        }
+
+        if (request.getType() == ServerRequest.RequestType.CANCEL) {
+            throw new IllegalStateException("Заявка на отмену сервера не содержит изменяемых параметров");
         }
 
         validateResources(dto.cpuCores(), dto.ramGb(), dto.diskGb(), dto.os());
@@ -175,7 +211,7 @@ public class ServerRequestService {
              ByteArrayOutputStream output = new ByteArrayOutputStream()) {
             Sheet sheet = workbook.createSheet("Server requests");
             Row header = sheet.createRow(0);
-            String[] columns = {"ID", "Owner", "CPU", "RAM", "Disk", "OS", "Status", "Created at"};
+            String[] columns = {"ID", "Owner", "CPU", "RAM", "Disk", "OS", "Status", "Created at", "Type", "Server"};
             for (int i = 0; i < columns.length; i++) {
                 header.createCell(i).setCellValue(columns[i]);
             }
@@ -191,6 +227,8 @@ public class ServerRequestService {
                 row.createCell(5).setCellValue(request.getOs());
                 row.createCell(6).setCellValue(request.getStatus().name());
                 row.createCell(7).setCellValue(request.getCreatedAt().toString());
+                row.createCell(8).setCellValue(request.getType().name());
+                row.createCell(9).setCellValue(request.getServer() == null ? "" : request.getServer().getId().toString());
             }
 
             workbook.write(output);
@@ -205,7 +243,8 @@ public class ServerRequestService {
             throw new IllegalStateException("Недопустимый переход статуса: " + request.getStatus() + " -> " + newStatus);
         }
 
-        if (newStatus == ServerRequest.RequestStatus.COMPLETED && request.getServer() == null) {
+        if (newStatus == ServerRequest.RequestStatus.COMPLETED && request.getType() == ServerRequest.RequestType.CREATE
+                && request.getServer() == null) {
             Server server = new Server(
                     "server-" + request.getId(),
                     request.getCpuCores(),
@@ -216,15 +255,25 @@ public class ServerRequestService {
             request.setServer(serverRepository.save(server));
         }
 
-        if (newStatus == ServerRequest.RequestStatus.CANCELLED && request.getServer() != null) {
-            request.setServer(null);
+        if (newStatus == ServerRequest.RequestStatus.COMPLETED && request.getType() == ServerRequest.RequestType.CHANGE) {
+            Server server = request.getServer();
+            server.setCpuCores(request.getCpuCores());
+            server.setRamGb(request.getRamGb());
+            server.setDiskGb(request.getDiskGb());
+            server.setOs(request.getOs());
+            serverRepository.save(server);
         }
 
         ServerRequest.RequestStatus oldStatus = request.getStatus();
         request.setStatus(newStatus);
         ServerRequestResponse response = toResponse(requestRepository.save(request));
         events.publishEvent(new RequestStatusChanged(request.getId(), request.getOwner().getEmail(),
-                request.getOwner().isEmailVerified(), oldStatus, newStatus));
+                request.getOwner().isEmailVerified(), oldStatus, newStatus, request.getType(),
+                request.getCpuCores(), request.getRamGb(), request.getDiskGb(), request.getOs(),
+                response.serverId(), request.getServer() == null ? null : request.getServer().getHostname()));
+        if (newStatus == ServerRequest.RequestStatus.COMPLETED && request.getType() == ServerRequest.RequestType.CANCEL) {
+            serverService.delete(request.getServer().getId());
+        }
         return response;
     }
 

@@ -12,9 +12,10 @@ import java.util.List;
 public class ExportService {
 
     public void exportRequests(Path file, List<ServerRequestResponse> requests) throws IOException {
-        StringBuilder csv = new StringBuilder("\uFEFFОС;CPU;RAM (ГБ);Диск (ГБ);Статус;Создана;ID заявки;ID сервера\r\n");
+        StringBuilder csv = new StringBuilder("\uFEFFТип заявки;ОС;CPU;RAM (ГБ);Диск (ГБ);Статус;Создана;ID заявки;ID сервера\r\n");
         for (ServerRequestResponse request : requests) {
-            csv.append(cell(request.os())).append(';')
+            csv.append(cell(Display.type(request.type()))).append(';')
+                    .append(cell(request.os())).append(';')
                     .append(request.cpuCores()).append(';')
                     .append(request.ramGb()).append(';')
                     .append(request.diskGb()).append(';')

@@ -6,6 +6,17 @@ import java.time.format.DateTimeFormatter;
 
 public class Display {
 
+    public static String type(String type) {
+        if (type == null) {
+            return "Создание";
+        }
+        return switch (type) {
+            case "CHANGE" -> "Изменение";
+            case "CANCEL" -> "Отмена сервера";
+            default -> "Создание";
+        };
+    }
+
     public static String status(String status) {
         return switch (status) {
             case "CREATED" -> "Создана";

@@ -8,6 +8,7 @@ import dev.hostapp.desktop.api.ApiException;
 import dev.hostapp.desktop.api.AuthApi;
 import dev.hostapp.desktop.api.ServerApi;
 import dev.hostapp.desktop.api.ServerRequestApi;
+import dev.hostapp.desktop.dto.ServerRequestData;
 import dev.hostapp.desktop.dto.server.ServerData;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -97,7 +98,7 @@ class ApiClientTest {
             method.set(exchange.getRequestMethod());
             path.set(exchange.getRequestURI().toString());
             body.set(new String(exchange.getRequestBody().readAllBytes(), StandardCharsets.UTF_8));
-            if (path.get().equals("/requests/create")) {
+            if (method.get().equals("POST")) {
                 reply(exchange, 201, "\"" + id + "\"");
             } else if (method.get().equals("DELETE")) {
                 reply(exchange, 204, "");
@@ -122,6 +123,14 @@ class ApiClientTest {
         assertEquals("/requests/" + id + "/status?status=COMPLETED", path.get());
         api.delete(id);
         assertEquals("DELETE", method.get());
+        assertEquals(id, api.requestChange(id, new ServerRequestData(8, 16, 40, "Debian")));
+        assertEquals("POST", method.get());
+        assertEquals("/requests/server/" + id + "/change", path.get());
+        assertEquals("Debian", mapper.readTree(body.get()).get("os").asText());
+        assertEquals(id, api.requestCancellation(id));
+        assertEquals("POST", method.get());
+        assertEquals("/requests/server/" + id + "/cancel", path.get());
+        assertEquals("", body.get());
     }
 
     @Test

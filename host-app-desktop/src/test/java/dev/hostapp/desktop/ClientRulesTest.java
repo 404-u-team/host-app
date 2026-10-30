@@ -85,7 +85,7 @@ class ClientRulesTest {
         Path file = directory.resolve("requests.csv");
         new ExportService().exportRequests(file, List.of(first, second));
         String csv = Files.readString(file, StandardCharsets.UTF_8);
-        assertTrue(csv.startsWith("\uFEFFОС;CPU"));
+        assertTrue(csv.startsWith("\uFEFFТип заявки;ОС;CPU"));
         assertTrue(csv.contains("\"Ubuntu; \"\"Server\"\"\nLTS\";4;"));
         assertTrue(csv.contains("\"'=1+1\";8;"));
         assertTrue(csv.contains(first.id().toString()));
@@ -96,7 +96,7 @@ class ClientRulesTest {
     }
 
     private ServerRequestResponse request(String os, String status, int cpu) {
-        return new ServerRequestResponse(UUID.randomUUID(), UUID.randomUUID(), cpu, 8, 20, os, status,
+        return new ServerRequestResponse(UUID.randomUUID(), UUID.randomUUID(), cpu, 8, 20, os, status, "CREATE",
                 null, "2026-10-21T12:00:00Z", "2026-10-21T12:00:00Z");
     }
 }

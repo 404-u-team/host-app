@@ -194,10 +194,44 @@ class EmailFlowTest {
         assertEquals(address, message.getValue().getTo()[0]);
         assertTrue(message.getValue().getText().contains("CREATED → COMPLETED"));
         assertTrue(message.getValue().getText().contains(request.id().toString()));
+        assertTrue(message.getValue().getText().contains("Тип заявки: Создание сервера"));
+        assertTrue(message.getValue().getText().contains("ОС: Debian"));
+        assertTrue(message.getValue().getText().contains("CPU: 2"));
+        assertTrue(message.getValue().getText().contains("RAM: 4 ГБ"));
+        assertTrue(message.getValue().getText().contains("Диск: 20 ГБ"));
         var second = requests.create(owner, new CreateServerRequest(2, 4, 20, "Debian"));
         doThrow(new MailSendException("unavailable")).when(sender).send(any(SimpleMailMessage.class));
         assertDoesNotThrow(() -> requests.updateStatus(second.id(), RequestStatus.REJECTED));
         assertEquals(RequestStatus.REJECTED, requests.get(second.id(), owner, false).status());
+    }
+
+    @Test
+    void cancellationEmailSurvivesDeletionAndIsSentOnlyAfterCommit() {
+        register();
+        User owner = verification.verify(address, deliveredCode());
+        var original = requests.create(owner, new CreateServerRequest(2, 4, 20, "Debian"));
+        UUID serverId = requests.updateStatus(original.id(), RequestStatus.COMPLETED).serverId();
+        var cancellation = requests.requestCancellation(owner, serverId);
+        reset(sender);
+        new TransactionTemplate(transactions).executeWithoutResult(status -> {
+            requests.updateStatus(cancellation.id(), RequestStatus.COMPLETED);
+            status.setRollbackOnly();
+        });
+        verifyNoInteractions(sender);
+        assertEquals(RequestStatus.CREATED, requests.get(cancellation.id(), owner, false).status());
+        new TransactionTemplate(transactions).executeWithoutResult(status -> {
+            requests.updateStatus(cancellation.id(), RequestStatus.COMPLETED);
+            verifyNoInteractions(sender);
+        });
+        assertTrue(requests.getAllByOwner(owner).isEmpty());
+        ArgumentCaptor<SimpleMailMessage> message = ArgumentCaptor.forClass(SimpleMailMessage.class);
+        verify(sender).send(message.capture());
+        String text = message.getValue().getText();
+        assertTrue(text.contains("Тип заявки: Отмена сервера"));
+        assertTrue(text.contains("ОС: Debian"));
+        assertTrue(text.contains("CPU: 2"));
+        assertTrue(text.contains(serverId.toString()));
+        assertTrue(text.contains(cancellation.id().toString()));
     }
 
     @Test

@@ -110,6 +110,11 @@ public class RequestsScreen extends BaseScreen {
                 "COMPLETED", "REJECTED", "CANCELLED"
         );
         try {
+            var request = requestApi.get(id);
+            if (status.equals("COMPLETED") && "CANCEL".equals(request.type())) {
+                String confirmation = readChoice("Удалить сервер и все связанные заявки? (ДА/НЕТ): ", "ДА", "НЕТ");
+                if (confirmation.equals("НЕТ")) return;
+            }
             printRequest(requestApi.updateStatus(id, status));
         } catch (Exception exception) {
             printError(exception.getMessage());

@@ -48,6 +48,11 @@ public class ServerRequest {
     @Column(nullable = false)
     private RequestStatus status;
 
+    @Enumerated(EnumType.STRING)
+    // Existing requests remain creation requests when Hibernate adds the column.
+    @Column(nullable = false, columnDefinition = "varchar(255) default 'CREATE'")
+    private RequestType type = RequestType.CREATE;
+
     @Column(name = "created_at", nullable = false, updatable = false)
     private Instant createdAt;
 
@@ -137,12 +142,26 @@ public class ServerRequest {
         this.status = status;
     }
 
+    public RequestType getType() {
+        return type;
+    }
+
+    public void setType(RequestType type) {
+        this.type = type;
+    }
+
     public Instant getCreatedAt() {
         return createdAt;
     }
 
     public Instant getUpdatedAt() {
         return updatedAt;
+    }
+
+    public enum RequestType {
+        CREATE,
+        CHANGE,
+        CANCEL
     }
 
     public enum RequestStatus {

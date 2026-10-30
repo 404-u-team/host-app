@@ -31,6 +31,7 @@ public class RequestsController extends BaseController {
 
     @FXML private TableView<ServerRequestResponse> table;
     @FXML private TableColumn<ServerRequestResponse, String> osColumn;
+    @FXML private TableColumn<ServerRequestResponse, String> typeColumn;
     @FXML private TableColumn<ServerRequestResponse, Integer> cpuColumn;
     @FXML private TableColumn<ServerRequestResponse, Integer> ramColumn;
     @FXML private TableColumn<ServerRequestResponse, Integer> diskColumn;
@@ -52,6 +53,7 @@ public class RequestsController extends BaseController {
 
     @FXML
     private void initialize() {
+        typeColumn.setCellValueFactory(cell -> new ReadOnlyObjectWrapper<>(Display.type(cell.getValue().type())));
         osColumn.setCellValueFactory(cell -> new ReadOnlyObjectWrapper<>(cell.getValue().os()));
         cpuColumn.setCellValueFactory(cell -> new ReadOnlyObjectWrapper<>(cell.getValue().cpuCores()));
         ramColumn.setCellValueFactory(cell -> new ReadOnlyObjectWrapper<>(cell.getValue().ramGb()));
@@ -162,7 +164,7 @@ public class RequestsController extends BaseController {
     private void details() {
         ServerRequestResponse selected = table.getSelectionModel().getSelectedItem();
         if (selected != null) {
-            Dialogs.info(app.getStage(), "Заявка", "ОС: " + selected.os()
+            Dialogs.info(app.getStage(), "Заявка", "Тип: " + Display.type(selected.type()) + "\nОС: " + selected.os()
                     + "\nCPU: " + selected.cpuCores() + "\nRAM: " + selected.ramGb() + " ГБ"
                     + "\nДиск: " + selected.diskGb() + " ГБ\nСтатус: " + Display.status(selected.status())
                     + "\nСоздана: " + Display.date(selected.createdAt())
@@ -203,7 +205,11 @@ public class RequestsController extends BaseController {
             String status = statuses.get(labels.indexOf(label));
             String message = "Изменить статус на «" + Display.status(status) + "»?";
             if (status.equals("COMPLETED")) {
-                message += " Будет создан сервер.";
+                message += switch (selected.type()) {
+                    case "CHANGE" -> " Будут изменены параметры сервера.";
+                    case "CANCEL" -> " Сервер и все связанные заявки будут удалены.";
+                    default -> " Будет создан сервер.";
+                };
             }
             if (Dialogs.confirm(app.getStage(), message)) {
                 runTask(() -> {
@@ -232,7 +238,7 @@ public class RequestsController extends BaseController {
 
     private void updateButtons() {
         ServerRequestResponse selected = table.getSelectionModel().getSelectedItem();
-        editButton.setDisable(selected == null || !selected.status().equals("CREATED"));
+        editButton.setDisable(selected == null || !selected.status().equals("CREATED") || "CANCEL".equals(selected.type()));
         deleteButton.setDisable(selected == null || selected.status().equals("COMPLETED"));
         detailsButton.setDisable(selected == null);
         serverButton.setDisable(selected == null || selected.serverId() == null);

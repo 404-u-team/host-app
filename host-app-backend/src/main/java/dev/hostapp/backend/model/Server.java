@@ -82,6 +82,10 @@ public class Server {
         return os;
     }
 
+    public void setOs(String os) {
+        this.os = os;
+    }
+
     public String getHostname() {
         return hostname;
     }

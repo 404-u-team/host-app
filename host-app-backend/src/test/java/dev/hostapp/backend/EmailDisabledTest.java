@@ -43,6 +43,7 @@ class EmailDisabledTest {
         var user = users.findByEmail("ADMIN").orElseThrow();
         assertTrue(user.isEmailVerified());
         assertEquals(0, user.getEmailCodeAttempts());
+        assertEquals("CREATE", jdbc.queryForObject("SELECT type FROM server_requests WHERE os = 'Debian'", String.class));
         String hash = Argon2PasswordEncoder.defaultsForSpringSecurity_v5_8().encode("password");
         jdbc.update("UPDATE users SET password_hash = ? WHERE email = 'ADMIN'", hash);
         assertNotNull(auth.loginUser("ADMIN", "password", "ip", "agent"));

@@ -11,6 +11,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import java.util.UUID;
 
 public class RequestService {
 
@@ -40,8 +41,19 @@ public class RequestService {
             if (!selected.status().equals("CREATED")) {
                 throw new IllegalArgumentException("Редактировать можно только созданную заявку.");
             }
+            if ("CANCEL".equals(selected.type())) {
+                throw new IllegalArgumentException("У заявки на отмену нет изменяемых параметров.");
+            }
             api.update(selected.id(), data.cpuCores(), data.ramGb(), data.diskGb(), data.os());
         }
+    }
+
+    public void requestChange(UUID serverId, ServerRequestData data) throws IOException, InterruptedException {
+        api.requestChange(serverId, data);
+    }
+
+    public void requestCancellation(UUID serverId) throws IOException, InterruptedException {
+        api.requestCancellation(serverId);
     }
 
     public void delete(ServerRequestResponse request) throws IOException, InterruptedException {
@@ -83,7 +95,7 @@ public class RequestService {
         String text = search.trim().toLowerCase(Locale.ROOT);
         List<ServerRequestResponse> result = new ArrayList<>();
         for (ServerRequestResponse request : source) {
-            String searchable = request.os() + " " + request.status() + " " + Display.status(request.status())
+            String searchable = Display.type(request.type()) + " " + request.os() + " " + request.status() + " " + Display.status(request.status())
                     + " " + request.cpuCores() + " " + request.ramGb() + " " + request.diskGb();
             boolean matchesSearch = searchable.toLowerCase(Locale.ROOT).contains(text);
             boolean matchesStatus = status.equals("Все") || request.status().equals(status);

@@ -26,6 +26,7 @@
     </FlowPane>
     <TableView fx:id="table" VBox.vgrow="ALWAYS">
         <columns>
+            <TableColumn fx:id="typeColumn" text="Тип заявки" prefWidth="150"/>
             <TableColumn fx:id="osColumn" text="ОС" prefWidth="180"/>
             <TableColumn fx:id="cpuColumn" text="CPU" prefWidth="75"/>
             <TableColumn fx:id="ramColumn" text="RAM, ГБ" prefWidth="100"/>

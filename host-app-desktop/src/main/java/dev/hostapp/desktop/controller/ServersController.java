@@ -50,10 +50,8 @@ public class ServersController extends BaseController {
     @Override
     public void setup(App app) {
         super.setup(app);
-        editButton.setVisible(app.isAdmin());
-        editButton.setManaged(app.isAdmin());
-        deleteButton.setVisible(app.isAdmin());
-        deleteButton.setManaged(app.isAdmin());
+        editButton.setText(app.isAdmin() ? "Изменить" : "Запросить изменение");
+        deleteButton.setText(app.isAdmin() ? "Удалить" : "Запросить отмену");
         updateButtons();
     }
 
@@ -78,7 +76,11 @@ public class ServersController extends BaseController {
     @FXML
     private void edit() {
         ServerResponse selected = table.getSelectionModel().getSelectedItem();
-        if (selected == null || !app.isAdmin()) {
+        if (selected == null) {
+            return;
+        }
+        if (!app.isAdmin()) {
+            requestChange(selected);
             return;
         }
         try {
@@ -96,9 +98,35 @@ public class ServersController extends BaseController {
         }
     }
 
+    private void requestChange(ServerResponse selected) {
+        try {
+            FXMLLoader loader = new FXMLLoader(App.class.getResource("/dev/hostapp/desktop/request-form.fxml"));
+            Parent content = loader.load();
+            Stage window = Dialogs.form(app.getStage(), "Заявка на изменение «" + selected.hostname() + "»", content);
+            RequestFormController controller = loader.getController();
+            controller.setupForServer(app, window, selected);
+            window.showAndWait();
+            if (controller.isSaved()) {
+                Dialogs.info(app.getStage(), "Заявка создана", "Заявка на изменение сервера отправлена администратору.");
+            }
+        } catch (IOException exception) {
+            app.handleError(exception);
+        }
+    }
+
     @FXML
     private void delete() {
         ServerResponse selected = table.getSelectionModel().getSelectedItem();
+        if (selected != null && !app.isAdmin()) {
+            if (Dialogs.confirm(app.getStage(), "Запросить отмену сервера «" + selected.hostname()
+                    + "»? После одобрения администратором сервер и все связанные заявки удалятся.")) {
+                runTask(() -> {
+                    app.getRequestService().requestCancellation(selected.id());
+                    return null;
+                }, result -> Dialogs.info(app.getStage(), "Заявка создана", "Заявка на отмену сервера отправлена администратору."));
+            }
+            return;
+        }
         if (selected != null && app.isAdmin() && Dialogs.confirm(app.getStage(), "Удалить сервер «"
                 + selected.hostname() + "»? Связанные заявки также удалятся.")) {
             runTask(() -> {

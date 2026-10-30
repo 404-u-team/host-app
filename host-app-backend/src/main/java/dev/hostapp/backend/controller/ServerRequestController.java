@@ -50,6 +50,23 @@ public class ServerRequestController {
         return ResponseEntity.status(HttpStatus.CREATED).body(response.id());
     }
 
+    @PostMapping("/server/{uuid}/change")
+    public ResponseEntity<UUID> requestChange(
+            @RequestAttribute("user") User currentUser,
+            @PathVariable UUID uuid,
+            @Valid @RequestBody CreateServerRequest dto
+    ) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(requestService.requestChange(currentUser, uuid, dto).id());
+    }
+
+    @PostMapping("/server/{uuid}/cancel")
+    public ResponseEntity<UUID> requestCancellation(
+            @RequestAttribute("user") User currentUser,
+            @PathVariable UUID uuid
+    ) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(requestService.requestCancellation(currentUser, uuid).id());
+    }
+
     @GetMapping("/{uuid}")
     public ResponseEntity<ServerRequestResponse> get(
             @RequestAttribute("user") User currentUser,
