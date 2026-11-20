@@ -104,6 +104,34 @@ class CourseworkApiTest {
         assertTrue(reset.get("mustChangePassword").asBoolean());
     }
 
+    @Test
+    void browserCanUseBearerForServersAndAdministratorDocumentation() throws Exception {
+        String editor = login(addUser());
+        assertEquals(401, send("GET", "/servers", null, "").statusCode());
+        assertEquals(200, send("GET", "/servers", editor, "").statusCode());
+        assertEquals(403, send("POST", "/api/admin/docs/session", editor, "").statusCode());
+
+        String adminLogin = UUID.randomUUID() + "@example.org";
+        User admin = new User("Test", "Admin", adminLogin, Passwords.encode("original-password"));
+        admin.updateAccount("Test", "Admin", adminLogin, Set.of(Role.ADMIN), true);
+        users.save(admin);
+        String access = login(adminLogin);
+        HttpResponse<String> response = send("POST", "/api/admin/docs/session", access, "");
+        assertEquals(204, response.statusCode());
+        String cookie = response.headers().firstValue("Set-Cookie").orElseThrow();
+        assertTrue(cookie.contains("HttpOnly"));
+        assertTrue(cookie.contains("SameSite=Strict"));
+        String value = cookie.split(";")[0];
+        assertEquals(200, getWithCookie("/v3/api-docs", value).statusCode());
+        assertEquals(401, getWithCookie("/servers", value).statusCode());
+    }
+
+    private HttpResponse<String> getWithCookie(String path, String cookie) throws Exception {
+        var request = HttpRequest.newBuilder(URI.create("http://127.0.0.1:" + port + path))
+                .header("Cookie", cookie).GET().build();
+        return client.send(request, HttpResponse.BodyHandlers.ofString());
+    }
+
     private String addUser() {
         String login = UUID.randomUUID() + "@example.org";
         users.save(new User("Test", "User", login, Passwords.encode("original-password")));

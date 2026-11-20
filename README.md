@@ -1,6 +1,6 @@
 # Host App
 
-## Бэкенд КР №3
+## Веб-интерфейс и бэкенд КР №3
 
 Для нового учебного окружения скопируйте корневой `.env.example` в `.env` и задайте пароль БД, временный пароль администратора и случайный Base64-ключ JWT длиной от 32 байт. На Windows выполните из корня проекта:
 
@@ -14,19 +14,32 @@ powershell -ExecutionPolicy Bypass -File .\host-app-backend\start-compose.ps1
 docker compose --env-file .env -f host-app-backend/compose.yaml -f host-app-backend/compose.kr3.yaml up -d --build --wait
 ```
 
-Учебное окружение использует Java 21, PostgreSQL 17 и собственный том. PostgreSQL доступен на `localhost:55432`, бэкенд на `localhost:8080`. Проверка готовности по `GET /actuator/health`, документация по `/swagger-ui.html` и `/v3/api-docs`. Аккаунт для первого запуска — `ADMIN`. После входа через `POST /api/auth/login` смените временный пароль запросом `POST /api/auth/change-password`. Подробности и примеры запросов приведены в [README бэкенда](host-app-backend/README.md).
+Откройте [http://localhost:8080/](http://localhost:8080/). На экране входа используйте логин `ADMIN` и временный пароль из `ADMIN_BOOTSTRAP_PASSWORD`. Веб-клиент предложит сменить пароль. Интерфейс включает реестр заявок, серверы, аналитику и прогноз, а для администратора — настройки справочника, пользователей и журнал аудита. Swagger и OpenAPI доступны из профиля администратора.
+
+Учебное окружение использует Java 21, PostgreSQL 17 и собственный том. PostgreSQL доступен на `localhost:55432`. Готовность проверяется по `GET /actuator/health`. [Контракт REST API и примеры запросов](host-app-backend/README.md).
+
+Для разработки веб-клиента запустите API, затем из другого терминала выполните:
+
+```sh
+cd host-app-web
+bun install --frozen-lockfile
+bun run dev
+```
+
+Vite откроется на `http://localhost:5173/` и передаст запросы к локальному API. Если бэкенд запущен на другом адресе, задайте `HOST_APP_BACKEND_URL` перед запуском. Обычная сборка клиента — `bun run build` из `host-app-web`. Docker Compose собирает этот клиент и включает его в JAR Spring Boot, поэтому отдельный процесс Bun нужен только для разработки.
 
 ## Существующее окружение PostgreSQL 16
 
-Полный запуск backend и PostgreSQL из каталога `host-app-backend`:
+Запуск веб-клиента, бэкенда и PostgreSQL из каталога `host-app-backend`:
 
 ```sh
 cd host-app-backend
 docker compose up --build
 ```
 
-API: http://localhost:8080  
-Swagger: http://localhost:8080/swagger-ui.html
+- Веб-клиент — http://localhost:8080/
+- API — http://localhost:8080/api
+- Swagger — http://localhost:8080/swagger-ui.html
 
 Для локальной разработки с запуском Spring Boot через Maven используйте только PostgreSQL из каталога `host-app-backend`:
 

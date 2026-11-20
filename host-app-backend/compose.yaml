@@ -20,8 +20,8 @@ services:
 
   backend:
     build:
-      context: .
-      dockerfile: Dockerfile
+      context: ..
+      dockerfile: host-app-backend/Dockerfile
     depends_on:
       postgres:
         condition: service_healthy

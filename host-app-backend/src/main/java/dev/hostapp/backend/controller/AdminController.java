@@ -7,14 +7,19 @@ import dev.hostapp.backend.filter.ApiQuery;
 import dev.hostapp.backend.domain.User;
 import dev.hostapp.backend.repository.AuditRepository;
 import dev.hostapp.backend.service.AdminUserService;
+import dev.hostapp.backend.security.JwtService;
+import dev.hostapp.backend.security.RequestAuthentication;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Size;
 import java.util.Map;
 import java.util.UUID;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.CacheControl;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -25,9 +30,24 @@ public class AdminController {
     private final AdminUserService admin;
     private final AuditRepository audit;
 
-    public AdminController(AdminUserService admin, AuditRepository audit) {
+    private final JwtService jwt;
+    private final boolean secureCookie;
+
+    public AdminController(AdminUserService admin, AuditRepository audit, JwtService jwt,
+                           @Value("${app.cookie.secure:false}") boolean secureCookie) {
         this.admin = admin;
         this.audit = audit;
+        this.jwt = jwt;
+        this.secureCookie = secureCookie;
+    }
+
+    @PostMapping("/docs/session")
+    public ResponseEntity<Void> openDocumentation(@RequestAttribute("user") User user) {
+        var cookie = ResponseCookie.from(RequestAuthentication.DOCS_COOKIE, jwt.issue(user))
+                .httpOnly(true).secure(secureCookie).sameSite("Strict").path("/")
+                .maxAge(jwt.expiresInSeconds()).build();
+        return ResponseEntity.noContent().cacheControl(CacheControl.noStore())
+                .header(HttpHeaders.SET_COOKIE, cookie.toString()).build();
     }
 
     @GetMapping("/users")

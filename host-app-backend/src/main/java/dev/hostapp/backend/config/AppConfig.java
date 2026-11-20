@@ -21,6 +21,9 @@ public class AppConfig implements WebMvcConfigurer {
             .addInterceptor(authInterceptor)
             .addPathPatterns("/**")
             .excludePathPatterns(
+                "/",
+                "/index.html",
+                "/assets/**",
                 "/auth/register",
                 "/auth/verify-email",
                 "/auth/resend-email-code",

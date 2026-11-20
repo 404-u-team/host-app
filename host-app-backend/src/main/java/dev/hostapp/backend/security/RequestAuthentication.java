@@ -15,6 +15,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 public class RequestAuthentication extends OncePerRequestFilter {
+    public static final String DOCS_COOKIE = "hostapp_docs";
     private final JwtService jwt;
     private final AuthService legacy;
 
@@ -33,9 +34,12 @@ public class RequestAuthentication extends OncePerRequestFilter {
             user = jwt.resolve(header.substring(7));
         } else if (isDocumentation(path) && request.getCookies() != null) {
             for (Cookie cookie : request.getCookies()) {
-                if ("session".equals(cookie.getName())) {
+                if (DOCS_COOKIE.equals(cookie.getName())) {
+                    user = jwt.resolve(cookie.getValue());
+                    if (user != null) break;
+                } else if ("session".equals(cookie.getName())) {
                     user = legacy.getUserByToken(cookie.getValue());
-                    break;
+                    if (user != null) break;
                 }
             }
         }

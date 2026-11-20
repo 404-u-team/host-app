@@ -16,9 +16,11 @@ import org.springframework.web.servlet.HandlerInterceptor;
 @Component
 public class AuthInterceptor implements HandlerInterceptor {
     private final AuthService authService;
+    private final JwtService jwt;
 
-    public AuthInterceptor(AuthService authService) {
+    public AuthInterceptor(AuthService authService, JwtService jwt) {
         this.authService = authService;
+        this.jwt = jwt;
     }
 
     @Override
@@ -27,13 +29,13 @@ public class AuthInterceptor implements HandlerInterceptor {
         HttpServletResponse response,
         Object handler
     ) {
-        String token = getToken(request);
-
+        String authorization = request.getHeader("Authorization");
+        boolean bearer = authorization != null && authorization.regionMatches(true, 0, "Bearer ", 0, 7);
+        String token = bearer ? authorization.substring(7) : getToken(request);
         if (token == null) {
             throw new UnauthorizedException("Сначала войдите в систему");
         }
-
-        User user = authService.getUserByToken(token);
+        User user = bearer ? jwt.resolve(token) : authService.getUserByToken(token);
 
         if (user == null) {
             throw new UnauthorizedException("Сессия недействительна, войдите снова");
