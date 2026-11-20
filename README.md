@@ -1,6 +1,22 @@
 # Host App
 
-## Backend в Docker Compose
+## Бэкенд КР №3
+
+Для нового учебного окружения скопируйте корневой `.env.example` в `.env` и задайте пароль БД, временный пароль администратора и случайный Base64-ключ JWT длиной от 32 байт. На Windows выполните из корня проекта:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\host-app-backend\start-compose.ps1
+```
+
+Та же сборка и запуск через Docker Compose:
+
+```sh
+docker compose --env-file .env -f host-app-backend/compose.yaml -f host-app-backend/compose.kr3.yaml up -d --build --wait
+```
+
+Учебное окружение использует Java 21, PostgreSQL 17 и собственный том. PostgreSQL доступен на `localhost:55432`, бэкенд на `localhost:8080`. Проверка готовности по `GET /actuator/health`, документация по `/swagger-ui.html` и `/v3/api-docs`. Аккаунт для первого запуска — `ADMIN`. После входа через `POST /api/auth/login` смените временный пароль запросом `POST /api/auth/change-password`. Подробности и примеры запросов приведены в [README бэкенда](host-app-backend/README.md).
+
+## Существующее окружение PostgreSQL 16
 
 Полный запуск backend и PostgreSQL из каталога `host-app-backend`:
 
@@ -21,8 +37,7 @@ docker compose -f docker-compose.dev.yaml up -d
 
 Демонстрационные данные не создаются. Зарегистрируйте пользователя через CLI или Desktop.
 Для создания администратора задайте `ADMIN_BOOTSTRAP_PASSWORD` в окружении backend
-(12–255 символов) перед запуском. Затем войдите с логином `ADMIN` и этим паролем;
-подтверждение email для него не требуется. Существующий аккаунт не изменяется.
+(12–255 символов) перед запуском. Подтверждение email для `ADMIN` отключено. Смените временный пароль через API перед использованием аккаунта в CLI или Desktop. Существующий аккаунт не изменяется.
 
 Заявка создается в `CREATED`. Администратор переводит ее прямо в `COMPLETED`:
 в одной транзакции создается сервер с CPU, RAM, диском и ОС из заявки,

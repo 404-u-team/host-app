@@ -1,6 +1,6 @@
 package dev.hostapp.backend;
 
-import dev.hostapp.backend.model.User;
+import dev.hostapp.backend.domain.User;
 import dev.hostapp.backend.repository.UserRepository;
 import dev.hostapp.backend.service.AdminBootstrap;
 import dev.hostapp.backend.service.AuthService;
@@ -8,7 +8,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.mail.javamail.JavaMailSender;
-import org.springframework.security.crypto.argon2.Argon2PasswordEncoder;
+import dev.hostapp.backend.security.Passwords;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -18,6 +18,7 @@ import static org.mockito.Mockito.verifyNoInteractions;
 @SpringBootTest(properties = {
         "spring.datasource.url=jdbc:h2:mem:admin-bootstrap;MODE=PostgreSQL;DB_CLOSE_DELAY=-1",
         "spring.datasource.driver-class-name=org.h2.Driver",
+        "spring.flyway.enabled=false",
         "spring.jpa.hibernate.ddl-auto=create-drop",
         "spring.jpa.show-sql=false",
         "spring.mail.host=smtp.example.org",
@@ -38,9 +39,9 @@ class AdminBootstrapTest {
         User admin = users.findByEmail("ADMIN").orElseThrow();
         assertTrue(admin.isEmailVerified());
         assertNull(admin.getEmailCodeHash());
+        assertTrue(admin.mustChangePassword());
         assertNotEquals("initial-admin-password", admin.getPasswordHash());
-        assertTrue(Argon2PasswordEncoder.defaultsForSpringSecurity_v5_8()
-                .matches("initial-admin-password", admin.getPasswordHash()));
+        assertTrue(Passwords.matches("initial-admin-password", admin.getPasswordHash()));
         String token = auth.loginUser("ADMIN", "initial-admin-password", "ip", "agent");
         assertEquals(admin.getId(), auth.getUserByToken(token).getId());
         verifyNoInteractions(sender);

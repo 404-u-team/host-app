@@ -4,7 +4,7 @@ import dev.hostapp.backend.dto.auth.LoginRequest;
 import dev.hostapp.backend.dto.auth.LoginResponse;
 import dev.hostapp.backend.dto.auth.RegisterRequest;
 import dev.hostapp.backend.dto.auth.RegisterResponse;
-import dev.hostapp.backend.model.User;
+import dev.hostapp.backend.domain.User;
 import dev.hostapp.backend.dto.auth.VerifyEmailRequest;
 import dev.hostapp.backend.dto.auth.ResendEmailCodeRequest;
 import dev.hostapp.backend.service.EmailVerificationService;
@@ -18,6 +18,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -28,11 +29,15 @@ import org.springframework.web.bind.annotation.RestController;
 public class AuthController {
 
     private final AuthService authService;
+
+    private final boolean secureCookie;
     private final UserService userService;
 
     private final EmailVerificationService verification;
 
-    public AuthController(AuthService authService, UserService userService, EmailVerificationService verification) {
+    public AuthController(AuthService authService, UserService userService, EmailVerificationService verification,
+                          @Value("${app.cookie.secure:false}") boolean secureCookie) {
+        this.secureCookie = secureCookie;
         this.verification = verification;
         this.authService = authService;
         this.userService = userService;
@@ -97,6 +102,7 @@ public class AuthController {
             ResponseCookie cookie = ResponseCookie
                 .from("session", token)
                 .httpOnly(true)
+                .secure(secureCookie)
                 .sameSite("Lax")
                 .path("/")
                 .maxAge(Duration.ofDays(7))

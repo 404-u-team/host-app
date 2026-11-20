@@ -6,9 +6,9 @@ import dev.hostapp.backend.dto.serverrequest.StatisticsResponse;
 import dev.hostapp.backend.dto.serverrequest.UpdateServerRequest;
 import dev.hostapp.backend.exceptions.ForbiddenException;
 import dev.hostapp.backend.exceptions.ResourceNotFoundException;
-import dev.hostapp.backend.model.Server;
-import dev.hostapp.backend.model.ServerRequest;
-import dev.hostapp.backend.model.User;
+import dev.hostapp.backend.domain.Server;
+import dev.hostapp.backend.domain.ServerRequest;
+import dev.hostapp.backend.domain.User;
 import dev.hostapp.backend.repository.ServerRepository;
 import dev.hostapp.backend.repository.ServerRequestRepository;
 import jakarta.transaction.Transactional;
@@ -33,17 +33,21 @@ public class ServerRequestService {
     private final ServerRepository serverRepository;
     private final ApplicationEventPublisher events;
     private final ServerService serverService;
+    private final ReferenceService references;
+    private final AuditService audit;
 
     public ServerRequestService(
             ServerRequestRepository requestRepository,
             ServerRepository serverRepository,
             ApplicationEventPublisher events,
-            ServerService serverService
+            ServerService serverService, ReferenceService references, AuditService audit
     ) {
         this.requestRepository = requestRepository;
         this.serverRepository = serverRepository;
         this.events = events;
         this.serverService = serverService;
+        this.references = references;
+        this.audit = audit;
     }
 
     @Transactional
@@ -51,7 +55,9 @@ public class ServerRequestService {
         validateResources(dto.cpuCores(), dto.ramGb(), dto.diskGb(), dto.os());
 
         ServerRequest request = new ServerRequest(owner, dto.cpuCores(), dto.ramGb(), dto.diskGb(), dto.os().trim());
+        request.setReference(references.forLegacy(request.getOs()));
         request = requestRepository.save(request);
+        audit.record(owner, "SERVER_CREATE_REQUEST", "REQUEST", request.getId(), "Создана заявка на сервер");
         return ServerRequestResponse.from(request, null);
     }
 
@@ -68,7 +74,10 @@ public class ServerRequestService {
         ServerRequest request = new ServerRequest(owner, dto.cpuCores(), dto.ramGb(), dto.diskGb(), dto.os().trim());
         request.setType(ServerRequest.RequestType.CHANGE);
         request.setServer(server);
-        return toResponse(requestRepository.save(request));
+        request.setReference(references.forLegacy(request.getOs()));
+        requestRepository.save(request);
+        audit.record(owner, "REQUEST_CREATED", "REQUEST", request.getId(), "Создана заявка на изменение сервера");
+        return toResponse(request);
     }
 
     @Transactional
@@ -78,7 +87,10 @@ public class ServerRequestService {
                 server.getDiskGb(), server.getOs());
         request.setType(ServerRequest.RequestType.CANCEL);
         request.setServer(server);
-        return toResponse(requestRepository.save(request));
+        request.setReference(references.forLegacy(request.getOs()));
+        requestRepository.save(request);
+        audit.record(owner, "REQUEST_CREATED", "REQUEST", request.getId(), "Создана заявка на отмену сервера");
+        return toResponse(request);
     }
 
     private Server findOwnedServer(UUID serverId, User owner) {
@@ -107,7 +119,9 @@ public class ServerRequestService {
         request.setRamGb(dto.ramGb());
         request.setDiskGb(dto.diskGb());
         request.setOs(dto.os().trim());
-        return toResponse(requestRepository.save(request));
+        request.setReference(references.forLegacy(request.getOs()));
+        audit.record(currentUser, "REQUEST_UPDATED", "REQUEST", requestId, "Параметры заявки изменены");
+        return toResponse(request);
     }
 
     @Transactional
@@ -118,23 +132,24 @@ public class ServerRequestService {
             throw new IllegalStateException("Нельзя удалить выполненную заявку");
         }
 
-        requestRepository.delete(request);
+        request.setArchived(true);
+        audit.record(currentUser, "REQUEST_ARCHIVED", "REQUEST", requestId, "Заявка отправлена в архив");
     }
 
     public List<ServerRequestResponse> getAllByOwner(User owner) {
-        return requestRepository.findAllByOwner(owner).stream()
+        return requestRepository.findAllByOwnerAndArchivedFalse(owner).stream()
                 .map(this::toResponse)
                 .toList();
     }
 
     public List<ServerRequestResponse> getAll() {
-        return requestRepository.findAll().stream()
+        return requestRepository.findAllByArchivedFalse().stream()
                 .map(this::toResponse)
                 .toList();
     }
 
     public Page<ServerRequestResponse> getAll(Pageable pageable) {
-        return requestRepository.findAll(pageable).map(this::toResponse);
+        return requestRepository.findAllByArchivedFalse(pageable).map(this::toResponse);
     }
 
     public List<ServerRequestResponse> searchByOs(User owner, String os, boolean isAdmin) {
@@ -142,6 +157,7 @@ public class ServerRequestService {
                 ? requestRepository.findAllByOsContainingIgnoreCase(os)
                 : requestRepository.findAllByOwnerAndOsContainingIgnoreCase(owner, os);
         return requests.stream()
+                .filter(request -> !request.isArchived())
                 .map(this::toResponse)
                 .toList();
     }
@@ -154,6 +170,7 @@ public class ServerRequestService {
                 ? requestRepository.findAllByCpuCoresGreaterThanEqual(minCpu)
                 : requestRepository.findAllByOwnerAndCpuCoresGreaterThanEqual(owner, minCpu);
         return requests.stream()
+                .filter(request -> !request.isArchived())
                 .map(this::toResponse)
                 .toList();
     }
@@ -163,6 +180,7 @@ public class ServerRequestService {
                 ? requestRepository.findAllByStatus(status)
                 : requestRepository.findAllByOwnerAndStatus(owner, status);
         return requests.stream()
+                .filter(request -> !request.isArchived())
                 .map(this::toResponse)
                 .toList();
     }
@@ -180,8 +198,8 @@ public class ServerRequestService {
         };
 
         List<ServerRequest> requests = isAdmin
-                ? requestRepository.findAll()
-                : requestRepository.findAllByOwner(owner);
+                ? requestRepository.findAllByArchivedFalse()
+                : requestRepository.findAllByOwnerAndArchivedFalse(owner);
         return requests.stream()
                 .sorted(comparator)
                 .map(this::toResponse)
@@ -190,8 +208,8 @@ public class ServerRequestService {
 
     public StatisticsResponse getStatistics(User owner, boolean isAdmin) {
         List<ServerRequest> requests = isAdmin
-                ? requestRepository.findAll()
-                : requestRepository.findAllByOwner(owner);
+                ? requestRepository.findAllByArchivedFalse()
+                : requestRepository.findAllByOwnerAndArchivedFalse(owner);
         return new StatisticsResponse(
                 requests.size(),
                 countByStatus(requests, ServerRequest.RequestStatus.CREATED),
@@ -204,8 +222,8 @@ public class ServerRequestService {
 
     public byte[] exportToExcel(User owner, boolean isAdmin) throws IOException {
         List<ServerRequest> requests = isAdmin
-                ? requestRepository.findAll()
-                : requestRepository.findAllByOwner(owner);
+                ? requestRepository.findAllByArchivedFalse()
+                : requestRepository.findAllByOwnerAndArchivedFalse(owner);
 
         try (XSSFWorkbook workbook = new XSSFWorkbook();
              ByteArrayOutputStream output = new ByteArrayOutputStream()) {
@@ -238,6 +256,11 @@ public class ServerRequestService {
 
     @Transactional
     public ServerRequestResponse updateStatus(UUID requestId, ServerRequest.RequestStatus newStatus) {
+        return updateStatus(requestId, newStatus, null);
+    }
+
+    @Transactional
+    public ServerRequestResponse updateStatus(UUID requestId, ServerRequest.RequestStatus newStatus, User actor) {
         ServerRequest request = findRequestForUpdate(requestId);
         if (!canChangeStatus(request.getStatus(), newStatus)) {
             throw new IllegalStateException("Недопустимый переход статуса: " + request.getStatus() + " -> " + newStatus);
@@ -267,23 +290,24 @@ public class ServerRequestService {
         ServerRequest.RequestStatus oldStatus = request.getStatus();
         request.setStatus(newStatus);
         ServerRequestResponse response = toResponse(requestRepository.save(request));
+        audit.record(actor, "REQUEST_STATUS_CHANGED", "REQUEST", requestId, oldStatus + " → " + newStatus);
         events.publishEvent(new RequestStatusChanged(request.getId(), request.getOwner().getEmail(),
                 request.getOwner().isEmailVerified(), oldStatus, newStatus, request.getType(),
                 request.getCpuCores(), request.getRamGb(), request.getDiskGb(), request.getOs(),
                 response.serverId(), request.getServer() == null ? null : request.getServer().getHostname()));
         if (newStatus == ServerRequest.RequestStatus.COMPLETED && request.getType() == ServerRequest.RequestType.CANCEL) {
-            serverService.delete(request.getServer().getId());
+            serverService.delete(request.getServer().getId(), actor);
         }
         return response;
     }
 
     private ServerRequest findRequestForUpdate(UUID requestId) {
-        return requestRepository.findByIdForUpdate(requestId)
+        return requestRepository.findByIdForUpdate(requestId).filter(request -> !request.isArchived())
                 .orElseThrow(() -> new ResourceNotFoundException("Заявка не найдена: " + requestId));
     }
 
     private ServerRequest findRequest(UUID requestId) {
-        return requestRepository.findById(requestId)
+        return requestRepository.findById(requestId).filter(request -> !request.isArchived())
                 .orElseThrow(() -> new ResourceNotFoundException("Заявка не найдена: " + requestId));
     }
 

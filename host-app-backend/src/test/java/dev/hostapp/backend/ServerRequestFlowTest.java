@@ -3,9 +3,9 @@ package dev.hostapp.backend;
 import dev.hostapp.backend.dto.serverrequest.CreateServerRequest;
 import dev.hostapp.backend.dto.serverrequest.UpdateServerRequest;
 import dev.hostapp.backend.exceptions.ForbiddenException;
-import dev.hostapp.backend.model.ServerRequest.RequestStatus;
-import dev.hostapp.backend.model.ServerRequest.RequestType;
-import dev.hostapp.backend.model.User;
+import dev.hostapp.backend.domain.ServerRequest.RequestStatus;
+import dev.hostapp.backend.domain.ServerRequest.RequestType;
+import dev.hostapp.backend.domain.User;
 import dev.hostapp.backend.repository.ServerRepository;
 import dev.hostapp.backend.repository.ServerRequestRepository;
 import dev.hostapp.backend.repository.UserRepository;
@@ -29,6 +29,7 @@ import static org.junit.jupiter.api.Assertions.*;
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT, properties = {
         "spring.datasource.url=jdbc:h2:mem:server-requests;MODE=PostgreSQL;DB_CLOSE_DELAY=-1",
         "spring.datasource.driver-class-name=org.h2.Driver",
+        "spring.flyway.enabled=false",
         "spring.jpa.hibernate.ddl-auto=create-drop",
         "spring.jpa.show-sql=false",
         "spring.mail.host=", "spring.mail.username=", "spring.mail.password=", "app.email.from=",

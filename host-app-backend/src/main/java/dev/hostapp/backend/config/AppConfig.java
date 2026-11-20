@@ -1,6 +1,6 @@
-package dev.hostapp.backend;
+package dev.hostapp.backend.config;
 
-import dev.hostapp.backend.middleware.AuthInterceptor;
+import dev.hostapp.backend.security.AuthInterceptor;
 
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
@@ -26,6 +26,8 @@ public class AppConfig implements WebMvcConfigurer {
                 "/auth/resend-email-code",
                 "/auth/login",
                 "/health",
+                "/api/**",
+                "/actuator/**",
                 "/swagger-ui.html",
                 "/swagger-ui/**",
                 "/v3/api-docs",

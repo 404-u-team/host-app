@@ -1,7 +1,7 @@
 package dev.hostapp.backend.service;
 
 import dev.hostapp.backend.exceptions.UserNotFoundException;
-import dev.hostapp.backend.model.User;
+import dev.hostapp.backend.domain.User;
 import dev.hostapp.backend.repository.UserRepository;
 import org.springframework.stereotype.Service;
 
@@ -14,12 +14,12 @@ public class UserService {
     }
 
     public User getByEmail(String email) {
-        return repository.findByEmail(email)
+        return repository.findByEmail(email).or(() -> repository.findFirstByEmailIgnoreCaseOrderByEmail(email))
                 .orElseThrow(() -> new UserNotFoundException("User not found"));
     }
 
     public boolean emailExists(String email) {
-        return repository.findByEmail(email).isPresent();
+        return repository.existsByEmailIgnoreCase(email);
     }
 
     public User createUser(String name, String surname, String email, String passwordHash) {

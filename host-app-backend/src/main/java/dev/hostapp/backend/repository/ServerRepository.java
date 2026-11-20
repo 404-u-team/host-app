@@ -10,7 +10,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
-import dev.hostapp.backend.model.Server;
+import dev.hostapp.backend.domain.Server;
 
 public interface ServerRepository extends JpaRepository<Server, UUID> {
 

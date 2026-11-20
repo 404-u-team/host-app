@@ -14,6 +14,7 @@ import static org.junit.jupiter.api.Assertions.*;
 @SpringBootTest(properties = {
         "spring.datasource.url=jdbc:h2:mem:email-disabled;MODE=PostgreSQL;DB_CLOSE_DELAY=-1",
         "spring.datasource.driver-class-name=org.h2.Driver",
+        "spring.flyway.enabled=false",
         "spring.jpa.hibernate.ddl-auto=update",
         "spring.jpa.show-sql=false",
         "spring.sql.init.mode=always",

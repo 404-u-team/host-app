@@ -41,6 +41,7 @@ public class EmailService {
         return email != null && email.length() <= 255 && email.matches("[^\\s@]+@[^\\s@]+\\.[^\\s@]+");
     }
 
+    public boolean isConfigured() { return configured; }
     public boolean isVerificationRequired() { return verificationRequired; }
     public boolean isNotificationsEnabled() { return configured && notificationsEnabled; }
 

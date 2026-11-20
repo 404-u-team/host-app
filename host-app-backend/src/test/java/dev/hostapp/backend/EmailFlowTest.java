@@ -3,8 +3,8 @@ package dev.hostapp.backend;
 import dev.hostapp.backend.dto.serverrequest.CreateServerRequest;
 import dev.hostapp.backend.exceptions.EmailDeliveryException;
 import dev.hostapp.backend.exceptions.UnauthorizedException;
-import dev.hostapp.backend.model.ServerRequest.RequestStatus;
-import dev.hostapp.backend.model.User;
+import dev.hostapp.backend.domain.ServerRequest.RequestStatus;
+import dev.hostapp.backend.domain.User;
 import dev.hostapp.backend.repository.UserRepository;
 import dev.hostapp.backend.service.AuthService;
 import dev.hostapp.backend.service.EmailVerificationService;
@@ -32,6 +32,7 @@ import static org.mockito.Mockito.*;
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT, properties = {
         "spring.datasource.url=jdbc:h2:mem:email-tests;MODE=PostgreSQL;DB_CLOSE_DELAY=-1",
         "spring.datasource.driver-class-name=org.h2.Driver",
+        "spring.flyway.enabled=false",
         "spring.jpa.hibernate.ddl-auto=create-drop",
         "spring.jpa.show-sql=false",
         "spring.mail.host=smtp.example.org",

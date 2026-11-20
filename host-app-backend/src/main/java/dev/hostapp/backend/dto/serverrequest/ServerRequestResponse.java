@@ -1,7 +1,7 @@
 package dev.hostapp.backend.dto.serverrequest;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import dev.hostapp.backend.model.ServerRequest;
+import dev.hostapp.backend.domain.ServerRequest;
 
 import java.time.Instant;
 import java.util.UUID;

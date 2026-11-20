@@ -1,7 +1,8 @@
 package dev.hostapp.backend.service;
 
 import dev.hostapp.backend.exceptions.UnauthorizedException;
-import dev.hostapp.backend.model.User;
+import dev.hostapp.backend.domain.User;
+import dev.hostapp.backend.security.Passwords;
 import dev.hostapp.backend.repository.UserRepository;
 import org.springframework.security.crypto.argon2.Argon2PasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -61,7 +62,7 @@ public class EmailVerificationService {
     @Transactional
     public User resend(String address, String password) {
         User user = findLocked(address);
-        if (password == null || !encoder.matches(password, user.getPasswordHash())) {
+        if (password == null || !Passwords.matches(password, user.getPasswordHash())) {
             throw new UnauthorizedException("Incorrect email or password");
         }
         if (user.isEmailVerified()) {
@@ -73,7 +74,7 @@ public class EmailVerificationService {
 
     private User findLocked(String address) {
         String value = address == null ? "" : address.trim();
-        return users.findByEmailForUpdate(value)
+        return users.lockLogin(value)
                 .orElseThrow(() -> new IllegalArgumentException("Неверный email или код подтверждения"));
     }
 }

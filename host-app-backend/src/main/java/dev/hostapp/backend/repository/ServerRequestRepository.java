@@ -8,22 +8,32 @@ import java.util.UUID;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.jpa.repository.Lock;
 import jakarta.persistence.LockModeType;
 import org.springframework.data.repository.query.Param;
 
-import dev.hostapp.backend.model.Server;
-import dev.hostapp.backend.model.ServerRequest;
-import dev.hostapp.backend.model.User;
+import dev.hostapp.backend.domain.Server;
+import dev.hostapp.backend.domain.ServerRequest;
+import dev.hostapp.backend.domain.User;
 
-public interface ServerRequestRepository extends JpaRepository<ServerRequest, UUID> {
+public interface ServerRequestRepository extends JpaRepository<ServerRequest, UUID>, JpaSpecificationExecutor<ServerRequest> {
 
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("SELECT r FROM ServerRequest r WHERE r.id = :id")
     Optional<ServerRequest> findByIdForUpdate(@Param("id") UUID id);
 
     List<ServerRequest> findAllByOwner(User owner);
+
+    List<ServerRequest> findAllByOwnerAndArchivedFalse(User owner);
+    List<ServerRequest> findAllByArchivedFalse();
+    Page<ServerRequest> findAllByArchivedFalse(Pageable pageable);
+    Optional<ServerRequest> findByExternalId(String externalId);
+
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("select r from ServerRequest r where r.externalId = :externalId")
+    Optional<ServerRequest> findByExternalIdForUpdate(String externalId);
 
     @Query("SELECT DISTINCT r.server FROM ServerRequest r WHERE r.owner = :owner AND r.server IS NOT NULL")
     List<Server> findAssignedServersByOwner(@Param("owner") User owner);

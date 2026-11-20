@@ -1,7 +1,7 @@
 package dev.hostapp.backend.service;
 
-import dev.hostapp.backend.model.ServerRequest.RequestStatus;
-import dev.hostapp.backend.model.ServerRequest.RequestType;
+import dev.hostapp.backend.domain.ServerRequest.RequestStatus;
+import dev.hostapp.backend.domain.ServerRequest.RequestType;
 import java.util.UUID;
 
 public record RequestStatusChanged(UUID requestId, String email, boolean emailVerified,

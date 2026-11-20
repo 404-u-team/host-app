@@ -1,0 +1,5 @@
+name: host-app-kr3
+
+services:
+  postgres:
+    image: postgres:17-alpine

@@ -1,7 +1,8 @@
-package dev.hostapp.backend.middleware;
+package dev.hostapp.backend.security;
 
-import dev.hostapp.backend.model.User;
+import dev.hostapp.backend.domain.User;
 import dev.hostapp.backend.exceptions.UnauthorizedException;
+import dev.hostapp.backend.exceptions.ForbiddenException;
 import dev.hostapp.backend.service.AuthService;
 
 import jakarta.servlet.http.Cookie;
@@ -38,6 +39,12 @@ public class AuthInterceptor implements HandlerInterceptor {
             throw new UnauthorizedException("Сессия недействительна, войдите снова");
         }
 
+        if (user.mustChangePassword()) {
+            throw new ForbiddenException("Сначала смените временный пароль через /api/auth/change-password");
+        }
+        if (!request.getMethod().equals("GET") && !request.getMethod().equals("HEAD") && !user.canEdit()) {
+            throw new ForbiddenException("Нет прав на изменение данных");
+        }
         request.setAttribute("user", user);
 
         return true;

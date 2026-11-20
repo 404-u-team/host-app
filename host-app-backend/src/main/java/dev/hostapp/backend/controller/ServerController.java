@@ -3,7 +3,7 @@ package dev.hostapp.backend.controller;
 import dev.hostapp.backend.dto.server.ServerResponse;
 import dev.hostapp.backend.dto.server.UpdateServerRequest;
 import dev.hostapp.backend.exceptions.ForbiddenException;
-import dev.hostapp.backend.model.User;
+import dev.hostapp.backend.domain.User;
 import dev.hostapp.backend.service.ServerService;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
@@ -49,7 +49,7 @@ public class ServerController {
             @Valid @RequestBody UpdateServerRequest dto
     ) {
         requireAdmin(currentUser);
-        return ResponseEntity.ok(serverService.update(uuid, dto));
+        return ResponseEntity.ok(serverService.update(uuid, dto, currentUser));
     }
 
     @DeleteMapping("/{uuid}")
@@ -58,7 +58,7 @@ public class ServerController {
             @PathVariable UUID uuid
     ) {
         requireAdmin(currentUser);
-        serverService.delete(uuid);
+        serverService.delete(uuid, currentUser);
         return ResponseEntity.noContent().build();
     }
 
@@ -69,6 +69,6 @@ public class ServerController {
     }
 
     private boolean isAdmin(User currentUser) {
-        return currentUser != null && "ADMIN".equalsIgnoreCase(currentUser.getEmail());
+        return currentUser != null && currentUser.isAdmin();
     }
 }

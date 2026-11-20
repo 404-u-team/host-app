@@ -1,7 +1,13 @@
-package dev.hostapp.backend.model;
+package dev.hostapp.backend.domain;
 
 import java.time.Instant;
 import java.util.UUID;
+import java.util.HashSet;
+import java.util.Set;
+import jakarta.persistence.CollectionTable;
+import jakarta.persistence.ElementCollection;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.Version;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -44,6 +50,38 @@ public class ServerRequest {
     @Column(nullable = false)
     private String os;
 
+    @Column(unique = true, length = 80)
+    private String externalId;
+
+    @Column(nullable = false, length = 160, columnDefinition = "varchar(160) default 'Заявка на сервер'")
+    private String title = "Заявка на сервер";
+
+    @Column(nullable = false, length = 2000, columnDefinition = "varchar(2000) default ''")
+    private String description = "";
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "reference_id")
+    private OsReference reference;
+
+    @Column(nullable = false, columnDefinition = "boolean default false")
+    private boolean urgent;
+
+    @Column(nullable = false, columnDefinition = "boolean default false")
+    private boolean archived;
+
+    @Version
+    @Column(nullable = false, columnDefinition = "bigint default 0")
+    private long version;
+
+    @ElementCollection
+    @CollectionTable(name = "request_tags", joinColumns = @JoinColumn(name = "request_id"))
+    @Column(name = "tag", nullable = false, length = 48)
+    private Set<String> tags = new HashSet<>();
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 16, columnDefinition = "varchar(16) default 'STANDARD'")
+    private Priority priority = Priority.STANDARD;
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private RequestStatus status;
@@ -69,17 +107,20 @@ public class ServerRequest {
         this.diskGb = diskGb;
         this.os = os;
         this.status = RequestStatus.CREATED;
+        this.externalId = "REQ-" + UUID.randomUUID().toString().toUpperCase(java.util.Locale.ROOT);
     }
 
     @PrePersist
     private void onCreate() {
         createdAt = Instant.now();
-        updatedAt = Instant.now();
+        updatedAt = createdAt;
+        priority = getPriority();
     }
 
     @PreUpdate
     private void onUpdate() {
         updatedAt = Instant.now();
+        priority = getPriority();
     }
 
     public UUID getId() {
@@ -133,6 +174,35 @@ public class ServerRequest {
     public void setOs(String os) {
         this.os = os;
     }
+
+    public String getExternalId() { return externalId == null ? "REQ-" + id.toString().toUpperCase(java.util.Locale.ROOT) : externalId; }
+    public String getTitle() { return title; }
+    public String getDescription() { return description; }
+    public OsReference getReference() { return reference; }
+    public boolean isUrgent() { return urgent; }
+    public boolean isArchived() { return archived; }
+    public long getVersion() { return version; }
+    public Set<String> getTags() { return Set.copyOf(tags); }
+    public Priority getPriority() {
+        return urgent || cpuCores >= 16 || ramGb >= 64 || diskGb >= 500 ? Priority.HIGH : Priority.STANDARD;
+    }
+
+    public void setReference(OsReference reference) { this.reference = reference; }
+    public void setArchived(boolean archived) { this.archived = archived; }
+    public void addTag(String tag) { tags.add(tag); updatedAt = Instant.now(); }
+    public void removeTag(String tag) { tags.remove(tag); updatedAt = Instant.now(); }
+
+    public void setDetails(String externalId, String title, String description, boolean urgent, Set<String> tags) {
+        this.externalId = externalId;
+        this.title = title;
+        this.description = description;
+        this.urgent = urgent;
+        this.tags.clear();
+        this.tags.addAll(tags);
+        updatedAt = Instant.now();
+    }
+
+    public enum Priority { STANDARD, HIGH }
 
     public RequestStatus getStatus() {
         return status;
