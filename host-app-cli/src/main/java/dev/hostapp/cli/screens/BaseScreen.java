@@ -78,6 +78,10 @@ public abstract class BaseScreen {
     protected void printRequest(ServerRequestResponse request) {
         System.out.println("ID: " + request.id());
         System.out.println("Владелец ID: " + request.ownerId());
+        String type = "Создание";
+        if ("CHANGE".equals(request.type())) type = "Изменение";
+        if ("CANCEL".equals(request.type())) type = "Отмена сервера";
+        System.out.println("Тип: " + type + " | Сервер: " + request.serverId());
         System.out.println("CPU: " + request.cpuCores() + " | RAM: " + request.ramGb()
                 + " GB | Disk: " + request.diskGb() + " GB");
         System.out.println("OS: " + request.os() + " | Статус: " + request.status());

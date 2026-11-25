@@ -4,8 +4,8 @@ import dev.hostapp.backend.dto.server.ServerResponse;
 import dev.hostapp.backend.dto.server.UpdateServerRequest;
 import dev.hostapp.backend.exceptions.ForbiddenException;
 import dev.hostapp.backend.exceptions.ResourceNotFoundException;
-import dev.hostapp.backend.model.Server;
-import dev.hostapp.backend.model.User;
+import dev.hostapp.backend.domain.Server;
+import dev.hostapp.backend.domain.User;
 import dev.hostapp.backend.repository.ServerRepository;
 import dev.hostapp.backend.repository.ServerRequestRepository;
 import jakarta.transaction.Transactional;
@@ -22,10 +22,12 @@ public class ServerService {
 
     private final ServerRepository serverRepository;
     private final ServerRequestRepository requestRepository;
+    private final AuditService audit;
 
-    public ServerService(ServerRepository serverRepository, ServerRequestRepository requestRepository) {
+    public ServerService(ServerRepository serverRepository, ServerRequestRepository requestRepository, AuditService audit) {
         this.serverRepository = serverRepository;
         this.requestRepository = requestRepository;
+        this.audit = audit;
     }
 
     @Transactional
@@ -48,7 +50,7 @@ public class ServerService {
     }
 
     @Transactional
-    public ServerResponse update(UUID serverId, UpdateServerRequest dto) {
+    public ServerResponse update(UUID serverId, UpdateServerRequest dto, User actor) {
         Server server = findServer(serverId);
         String hostname = normalizeHostname(dto.hostname());
         ensureHostnameAvailable(hostname, serverId);
@@ -59,15 +61,20 @@ public class ServerService {
         server.setHostname(hostname);
         server.setIpv4Addresses(normalizeAddresses(dto.ipv4Addresses()));
         server.setIpv6Addresses(normalizeAddresses(dto.ipv6Addresses()));
+        audit.record(actor, "SERVER_UPDATED", "SERVER", serverId, "Параметры сервера изменены");
         return ServerResponse.from(serverRepository.save(server));
     }
 
     @Transactional
-    public void delete(UUID serverId) {
+    public void delete(UUID serverId) { delete(serverId, null); }
+
+    @Transactional
+    public void delete(UUID serverId, User actor) {
         Server server = findServer(serverId);
         requestRepository.deleteAll(requestRepository.findAllByServer(server));
         requestRepository.flush();
         serverRepository.delete(server);
+        audit.record(actor, "SERVER_DELETED", "SERVER", serverId, "Сервер удалён");
     }
 
     private Server findServer(UUID serverId) {

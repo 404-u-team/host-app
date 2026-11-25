@@ -1,0 +1,14 @@
+**
+!host-app-backend/
+!host-app-backend/Dockerfile
+!host-app-backend/pom.xml
+!host-app-backend/src/
+!host-app-backend/src/**
+
+!host-app-web/
+!host-app-web/package.json
+!host-app-web/bun.lock
+!host-app-web/index.html
+!host-app-web/vite.config.js
+!host-app-web/src/
+!host-app-web/src/**

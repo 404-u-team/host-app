@@ -1,0 +1,37 @@
+.root {
+    -fx-font-family: "SansSerif";
+    -fx-font-size: 14px;
+    -fx-background-color: #f5f5f5;
+}
+.page {
+    -fx-padding: 20;
+}
+.header {
+    -fx-padding: 16 20;
+    -fx-background-color: #e7e7e7;
+}
+.title {
+    -fx-font-size: 22px;
+    -fx-font-weight: bold;
+}
+.button {
+    -fx-padding: 8 12;
+    -fx-cursor: hand;
+}
+.primary {
+    -fx-background-color: #346ca6;
+    -fx-text-fill: white;
+}
+.text-field, .combo-box {
+    -fx-pref-height: 34;
+}
+.table-view {
+    -fx-background-color: white;
+    -fx-border-color: #cccccc;
+}
+.table-row-cell {
+    -fx-cell-size: 34;
+}
+.hint {
+    -fx-text-fill: #555555;
+}

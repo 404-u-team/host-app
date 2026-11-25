@@ -20,6 +20,14 @@ public class ServerRequestApi extends BaseApi {
         return client.post("/requests/create", new ServerRequestData(cpu, ram, disk, os), UUID.class);
     }
 
+    public UUID requestChange(UUID serverId, ServerRequestData data) throws IOException, InterruptedException {
+        return client.post("/requests/server/" + serverId + "/change", data, UUID.class);
+    }
+
+    public UUID requestCancellation(UUID serverId) throws IOException, InterruptedException {
+        return client.post("/requests/server/" + serverId + "/cancel", null, UUID.class);
+    }
+
     public List<ServerRequestResponse> getAll() throws IOException, InterruptedException {
         return client.getList("/requests", ServerRequestResponse.class);
     }

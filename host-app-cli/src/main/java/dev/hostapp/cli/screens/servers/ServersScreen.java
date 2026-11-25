@@ -1,6 +1,8 @@
 package dev.hostapp.cli.screens.servers;
 
 import dev.hostapp.cli.api.ServerApi;
+import dev.hostapp.cli.api.ServerRequestApi;
+import dev.hostapp.cli.dto.ServerRequestData;
 import dev.hostapp.cli.dto.server.ServerData;
 import dev.hostapp.cli.dto.server.ServerResponse;
 import dev.hostapp.cli.screens.BaseScreen;
@@ -13,11 +15,13 @@ import java.util.UUID;
 public class ServersScreen extends BaseScreen {
 
     private final ServerApi serverApi;
+    private final ServerRequestApi requestApi;
     private final boolean admin;
 
-    public ServersScreen(Scanner scanner, ServerApi serverApi, boolean admin) {
+    public ServersScreen(Scanner scanner, ServerApi serverApi, ServerRequestApi requestApi, boolean admin) {
         super(scanner);
         this.serverApi = serverApi;
+        this.requestApi = requestApi;
         this.admin = admin;
     }
 
@@ -31,6 +35,9 @@ public class ServersScreen extends BaseScreen {
             if (admin) {
                 System.out.println("3. Изменить сервер");
                 System.out.println("4. Удалить сервер");
+            } else {
+                System.out.println("3. Запросить изменение сервера");
+                System.out.println("4. Запросить отмену сервера");
             }
             System.out.println("0. Назад");
 
@@ -39,11 +46,11 @@ public class ServersScreen extends BaseScreen {
                 case "2" -> showById();
                 case "3" -> {
                     if (admin) update();
-                    else printError("неизвестный пункт меню");
+                    else requestChange();
                 }
                 case "4" -> {
                     if (admin) delete();
-                    else printError("неизвестный пункт меню");
+                    else requestCancellation();
                 }
                 case "0" -> {
                     return;
@@ -75,6 +82,33 @@ public class ServersScreen extends BaseScreen {
         ServerData server = readServerData();
         try {
             printServer(serverApi.update(id, server));
+        } catch (Exception exception) {
+            printError(exception.getMessage());
+        }
+    }
+
+    private void requestChange() {
+        UUID id = readUuid("ID сервера: ");
+        int cpu = readPositiveInteger("CPU: ");
+        int ram = readPositiveInteger("RAM (GB): ");
+        int disk = readPositiveInteger("Disk (GB): ");
+        String os = readNonEmpty("OS: ");
+        try {
+            UUID requestId = requestApi.requestChange(id, new ServerRequestData(cpu, ram, disk, os));
+            System.out.println("Заявка на изменение создана: " + requestId);
+        } catch (Exception exception) {
+            printError(exception.getMessage());
+        }
+    }
+
+    private void requestCancellation() {
+        UUID id = readUuid("ID сервера: ");
+        String confirmation = readChoice("Запросить отмену? После одобрения сервер и все связанные заявки удалятся. (ДА/НЕТ): ", "ДА", "НЕТ");
+        if (confirmation.equals("НЕТ")) {
+            return;
+        }
+        try {
+            System.out.println("Заявка на отмену создана: " + requestApi.requestCancellation(id));
         } catch (Exception exception) {
             printError(exception.getMessage());
         }

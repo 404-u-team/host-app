@@ -12,6 +12,7 @@ public record ServerRequestResponse(
         @JsonProperty("disk_gb") Integer diskGb,
         String os,
         String status,
+        String type,
         @JsonProperty("server_id") UUID serverId,
         @JsonProperty("created_at") String createdAt,
         @JsonProperty("updated_at") String updatedAt

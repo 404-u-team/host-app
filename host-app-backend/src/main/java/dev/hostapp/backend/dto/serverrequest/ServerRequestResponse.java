@@ -1,7 +1,7 @@
 package dev.hostapp.backend.dto.serverrequest;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import dev.hostapp.backend.model.ServerRequest;
+import dev.hostapp.backend.domain.ServerRequest;
 
 import java.time.Instant;
 import java.util.UUID;
@@ -14,6 +14,7 @@ public record ServerRequestResponse(
         @JsonProperty("disk_gb") Integer diskGb,
         String os,
         ServerRequest.RequestStatus status,
+        ServerRequest.RequestType type,
         @JsonProperty("server_id") UUID serverId,
         @JsonProperty("created_at") Instant createdAt,
         @JsonProperty("updated_at") Instant updatedAt
@@ -31,6 +32,7 @@ public record ServerRequestResponse(
                 r.getDiskGb(),
                 r.getOs(),
                 r.getStatus(),
+                r.getType(),
                 serverId,
                 r.getCreatedAt(),
                 r.getUpdatedAt()

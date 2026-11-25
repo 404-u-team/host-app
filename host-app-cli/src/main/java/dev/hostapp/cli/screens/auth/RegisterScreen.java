@@ -37,6 +37,24 @@ public class RegisterScreen extends BaseScreen {
             );
 
             System.out.println();
+            while (response.verificationRequired()) {
+                System.out.println("Подтвердите email: " + response.email() + ". Код действует 10 минут.");
+                String code = readLine("Код (6 цифр), resend — отправить повторно, Enter — выйти: ");
+                if (code.isBlank()) {
+                    System.out.println("Для продолжения откройте регистрацию с теми же email и паролем.");
+                    return;
+                }
+                try {
+                    if (code.equalsIgnoreCase("resend")) {
+                        authApi.resendEmailCode(response.email(), password);
+                        System.out.println("Новый код отправлен. Повторная отправка доступна через 60 секунд.");
+                    } else {
+                        response = authApi.verifyEmail(response.email(), code.trim());
+                    }
+                } catch (Exception exception) {
+                    printError(exception.getMessage());
+                }
+            }
             System.out.println("Регистрация выполнена");
 
             System.out.println(

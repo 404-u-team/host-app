@@ -4,8 +4,8 @@ import dev.hostapp.backend.dto.serverrequest.CreateServerRequest;
 import dev.hostapp.backend.dto.serverrequest.ServerRequestResponse;
 import dev.hostapp.backend.dto.serverrequest.StatisticsResponse;
 import dev.hostapp.backend.dto.serverrequest.UpdateServerRequest;
-import dev.hostapp.backend.model.ServerRequest;
-import dev.hostapp.backend.model.User;
+import dev.hostapp.backend.domain.ServerRequest;
+import dev.hostapp.backend.domain.User;
 import dev.hostapp.backend.service.ServerRequestService;
 import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;
@@ -50,6 +50,23 @@ public class ServerRequestController {
         return ResponseEntity.status(HttpStatus.CREATED).body(response.id());
     }
 
+    @PostMapping("/server/{uuid}/change")
+    public ResponseEntity<UUID> requestChange(
+            @RequestAttribute("user") User currentUser,
+            @PathVariable UUID uuid,
+            @Valid @RequestBody CreateServerRequest dto
+    ) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(requestService.requestChange(currentUser, uuid, dto).id());
+    }
+
+    @PostMapping("/server/{uuid}/cancel")
+    public ResponseEntity<UUID> requestCancellation(
+            @RequestAttribute("user") User currentUser,
+            @PathVariable UUID uuid
+    ) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(requestService.requestCancellation(currentUser, uuid).id());
+    }
+
     @GetMapping("/{uuid}")
     public ResponseEntity<ServerRequestResponse> get(
             @RequestAttribute("user") User currentUser,
@@ -88,7 +105,7 @@ public class ServerRequestController {
             @RequestAttribute("user") User currentUser
     ) {
         if (!isAdmin(currentUser)) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+            throw new dev.hostapp.backend.exceptions.ForbiddenException("Действие доступно администратору");
         }
         return ResponseEntity.ok(requestService.getAll());
     }
@@ -99,7 +116,7 @@ public class ServerRequestController {
             @PageableDefault(size = 20) Pageable pageable
     ) {
         if (!isAdmin(currentUser)) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+            throw new dev.hostapp.backend.exceptions.ForbiddenException("Действие доступно администратору");
         }
         return ResponseEntity.ok(requestService.getAll(pageable));
     }
@@ -111,13 +128,13 @@ public class ServerRequestController {
             @RequestParam ServerRequest.RequestStatus status
     ) {
         if (!isAdmin(currentUser)) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+            throw new dev.hostapp.backend.exceptions.ForbiddenException("Действие доступно администратору");
         }
-        return ResponseEntity.ok(requestService.updateStatus(uuid, status));
+        return ResponseEntity.ok(requestService.updateStatus(uuid, status, currentUser));
     }
 
     private boolean isAdmin(User user) {
-        return user != null && "ADMIN".equalsIgnoreCase(user.getEmail());
+        return user != null && user.isAdmin();
     }
 
     @GetMapping("/search")
@@ -180,7 +197,7 @@ public class ServerRequestController {
     ) {
         ServerRequestResponse response = requestService.get(uuid, currentUser, isAdmin(currentUser));
         if (response.serverId() == null) {
-            return ResponseEntity.notFound().build();
+            throw new dev.hostapp.backend.exceptions.ResourceNotFoundException("Связанный сервер не найден");
         }
         return ResponseEntity.ok(response.serverId());
     }

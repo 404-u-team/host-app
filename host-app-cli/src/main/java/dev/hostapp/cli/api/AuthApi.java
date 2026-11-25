@@ -5,6 +5,9 @@ import dev.hostapp.cli.dto.auth.LoginResponse;
 import dev.hostapp.cli.dto.auth.RegisterRequest;
 import dev.hostapp.cli.dto.auth.RegisterResponse;
 
+import dev.hostapp.cli.dto.auth.VerifyEmailRequest;
+import dev.hostapp.cli.dto.auth.ResendEmailCodeRequest;
+
 import java.io.IOException;
 
 public class AuthApi extends BaseApi {
@@ -32,6 +35,14 @@ public class AuthApi extends BaseApi {
             request,
             RegisterResponse.class
         );
+    }
+
+    public RegisterResponse verifyEmail(String email, String code) throws IOException, InterruptedException {
+        return client.post("/auth/verify-email", new VerifyEmailRequest(email, code), RegisterResponse.class);
+    }
+
+    public RegisterResponse resendEmailCode(String email, String password) throws IOException, InterruptedException {
+        return client.post("/auth/resend-email-code", new ResendEmailCodeRequest(email, password), RegisterResponse.class);
     }
 
     public LoginResponse login(
