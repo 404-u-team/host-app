@@ -99,7 +99,6 @@ const eventNames = {
   SERVER_UPDATED: 'Сервер изменён', SERVER_DELETED: 'Сервер удалён', USER_REGISTERED: 'Регистрация',
   USER_CREATED: 'Пользователь создан', USER_UPDATED: 'Пользователь изменён', PASSWORD_RESET: 'Сброс пароля',
   PASSWORD_CHANGED: 'Пароль изменён', REFERENCE_CREATED: 'ОС добавлена', REFERENCE_UPDATED: 'ОС изменена',
-  FORECAST_DEMO_SEEDED: 'Подготовлена учебная история',
 }
 </script>
 

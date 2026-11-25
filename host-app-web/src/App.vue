@@ -150,7 +150,7 @@ onMounted(() => { start(); refreshHealth() })
       <main id="main-content" class="main-content" tabindex="-1">
         <RequestsView v-if="current.key === 'requests'" :id="current.id" :admin="admin" :editor="editor" :account="account" />
         <ServersView v-else-if="current.key === 'servers'" :id="current.id" :admin="admin" :editor="editor" />
-        <AnalyticsView v-else-if="current.key === 'analytics'" :admin="admin" />
+        <AnalyticsView v-else-if="current.key === 'analytics'" />
         <AdminView v-else-if="admin && administration.some(item => item.key === current.key)" :key="current.key"
           :mode="current.key" :account="account" />
         <AccountView v-else :account="account" :admin="admin" @changed="updateAccount" />
