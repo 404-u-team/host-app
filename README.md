@@ -14,7 +14,7 @@ powershell -ExecutionPolicy Bypass -File .\host-app-backend\start-compose.ps1
 docker compose --env-file .env -f host-app-backend/compose.yaml -f host-app-backend/compose.kr3.yaml up -d --build --wait
 ```
 
-Откройте [http://localhost:8080/](http://localhost:8080/). На экране входа используйте логин `ADMIN` и временный пароль из `ADMIN_BOOTSTRAP_PASSWORD`. Веб-клиент предложит сменить пароль. Интерфейс включает реестр заявок, серверы и аналитику, а для администратора — настройки справочника, пользователей и журнал аудита. Swagger и OpenAPI доступны из профиля администратора.
+Откройте [http://localhost:8080/](http://localhost:8080/). На экране входа используйте логин `ADMIN` и временный пароль из `ADMIN_BOOTSTRAP_PASSWORD`. Веб-клиент предложит сменить пароль. Интерфейс включает реестр заявок, серверы, аналитику и прогноз, а для администратора — настройки справочника, пользователей и журнал аудита. Swagger и OpenAPI доступны из профиля администратора.
 
 Учебное окружение использует Java 21, PostgreSQL 17 и собственный том. PostgreSQL доступен на `localhost:55432`. Готовность проверяется по `GET /actuator/health`. [Контракт REST API и примеры запросов](host-app-backend/README.md).
 
