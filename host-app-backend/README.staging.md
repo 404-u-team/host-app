@@ -1,6 +1,9 @@
 # Стенд через Komodo и Nginx Proxy Manager
 
-`compose.staging.yaml` — самостоятельный Compose-файл для стенда.
+`compose.staging.yaml` запускает PostgreSQL и приложение. Spring Boot раздаёт Vue
+и API на одном порту. Healthcheck проверяет и API готовности, и главную страницу.
+Образ собирает фронтенд и бэкенд независимо, поэтому при изменениях только во
+фронтенде BuildKit может переиспользовать готовый JAR.
 Используйте его отдельно, без объединения с `compose.yaml`: при объединении
 могут сохраниться опубликованные порты локальной конфигурации.
 
@@ -103,8 +106,9 @@ DNS домена должен вести на ваш Nginx Proxy Manager.
 Настройте сертификат для домена на вкладке SSL и включите Force SSL.
 HTTPS завершается на прокси, до backend запросы идут по HTTP внутри Docker.
 
-Проверка: `https://hostapp.example.com/health` должен вернуть `OK`.
-Swagger: `https://hostapp.example.com/swagger-ui.html`.
+Откройте веб-клиент на `https://hostapp.example.com/`. Готовность приложения
+проверяется по `https://hostapp.example.com/actuator/health`. Swagger доступен
+из профиля администратора.
 
 ## Настольный клиент
 
@@ -127,5 +131,9 @@ cp .env.staging.example .env.staging
 # Заполните POSTGRES_PASSWORD в .env.staging перед запуском.
 docker compose --env-file .env.staging -f compose.staging.yaml up -d --build
 ```
+
+Если менялись только переменные окружения и нужный образ уже собран, передайте
+`--no-build` вместо `--build`. Чтобы увидеть, какой этап сборки задерживается,
+запустите `docker compose --progress plain --env-file .env.staging -f compose.staging.yaml build backend`.
 
 Не добавляйте `.env.staging` с паролями в Git.

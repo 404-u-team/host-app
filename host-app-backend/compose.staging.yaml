@@ -56,7 +56,9 @@ services:
         aliases:
           - hostapp-staging-backend
     healthcheck:
-      test: ["CMD", "curl", "-fsS", "http://localhost:8080/actuator/health"]
+      test:
+        - CMD-SHELL
+        - curl -fsS -o /dev/null http://localhost:8080/actuator/health && curl -fsS -o /dev/null http://localhost:8080/
       interval: 5s
       timeout: 3s
       retries: 20

@@ -26,7 +26,7 @@ bun install --frozen-lockfile
 bun run dev
 ```
 
-Vite откроется на `http://localhost:5173/` и передаст запросы к локальному API. Если бэкенд запущен на другом адресе, задайте `HOST_APP_BACKEND_URL` перед запуском. Обычная сборка клиента — `bun run build` из `host-app-web`. Docker Compose собирает этот клиент и включает его в JAR Spring Boot, поэтому отдельный процесс Bun нужен только для разработки.
+Vite откроется на `http://localhost:5173/` и передаст запросы к локальному API. Если бэкенд запущен на другом адресе, задайте `HOST_APP_BACKEND_URL` перед запуском. Обычная сборка клиента — `bun run build` из `host-app-web`. Docker Compose включает веб-клиент в образ, и Spring Boot раздаёт его на том же порту, что и API.
 
 ## Существующее окружение PostgreSQL 16
 
